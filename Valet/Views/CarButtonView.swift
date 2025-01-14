@@ -35,7 +35,6 @@ struct CarButtonView: View {
         .cornerRadius(10)
         .shadow(radius: 4)
         .onLongPressGesture(minimumDuration: 3.0) {
-            // Mark as returned if not already
             if !car.isReturned {
                 shiftStore.returnCar(in: shift, car: car)
             }
