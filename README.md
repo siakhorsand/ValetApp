@@ -9,5 +9,21 @@ This Valet Company App is a fully-featured, enterprise-grade solution designed t
 	-	User-Friendly Interface: Intuitive design that prioritizes ease of use for both valet attendants and customers, ensuring minimal training and faster service.
 	-	Administrative Dashboard: A robust backend panel for managers to oversee valet operations, generate reports, and analyze performance metrics.
 
-## Impact and Implementation:
-This app was successfully deployed and beta-tested a leading valet service provider where I worked part-time. During my tenure, it facilitated smoother operations by reducing vehicle retrieval time by up to 20% and minimizing ticketing errors by digitizing the entire process. The solution not only improved customer satisfaction but also boosted operational efficiency, leading to positive feedback from both clients and management.
+## Technical Overview
+- **Frontend**:  
+  Developed using **Swift** for iOS, leveraging **SwiftUI** and **UIKit** to create a clean, responsive, and modern user interface.
+- **Backend**:  
+  Powered by **Firebase**, including Firebase Realtime Database and Firestore for scalable data management. Firebase Authentication is used to handle secure user sign-ins, while Cloud Functions manage server-side logic.
+- **Database**:  
+  Uses **Firestore** for its real-time capabilities and automatic syncing across devices, ensuring smooth and responsive data handling for users.
+- **Authentication & Security**:  
+  Implements **Firebase Authentication** with email, phone, and third-party sign-ins (e.g., Google, Apple) for a secure and seamless login experience.
+- **Real-Time Communication**:  
+  Firebase's real-time syncing capabilities enable instant updates for vehicle status and user notifications, significantly improving operational speed.
+- **Cloud Functions**:  
+  Cloud Functions handle critical backend logic, such as generating digital tickets, processing payments, and sending notifications.
+- **Deployment**:  
+  The app is deployed using **Firebase Hosting** for the frontend and **Cloud Functions** for backend services, ensuring high availability and minimal latency.
+
+## Impact and Implementation
+This app was successfully deployed at a leading valet service provider where I worked part-time. During my tenure, it facilitated smoother operations by reducing vehicle retrieval time by up to **20%** and minimizing ticketing errors by digitizing the entire process. The solution not only improved customer satisfaction but also boosted operational efficiency, leading to positive feedback from both clients and management.
