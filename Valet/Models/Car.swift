@@ -6,9 +6,11 @@
 //
 
 import Foundation
+import UIKit
 
 struct Car: Identifiable {
     let id = UUID()
+    let photo: UIImage?
     var licensePlate: String
     var make: String
     var model: String
@@ -18,4 +20,5 @@ struct Car: Identifiable {
     var departureTime: Date?
     var isReturned: Bool = false
     var parkedBy: Employee? // Which employee parked the car
+    
 }

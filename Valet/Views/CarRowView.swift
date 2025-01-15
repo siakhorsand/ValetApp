@@ -36,7 +36,7 @@ struct CarRowView_Previews: PreviewProvider {
     static var previews: some View {
         let previewShift = Shift(customerName: "Test Customer", address: "123 Test St")
         let previewCar = Car(
-            licensePlate: "ABC123",
+            photo: UIImage(named: "someImage"), licensePlate: "ABC123",
             make: "Toyota",
             model: "Corolla",
             color: "Silver",

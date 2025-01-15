@@ -34,6 +34,7 @@ class ShiftStore: ObservableObject {
                 parkedBy: Employee?) {
         guard let idx = shifts.firstIndex(where: { $0.id == shift.id }) else { return }
         let newCar = Car(
+            photo: nil,
             licensePlate: licensePlate,
             make: make,
             model: model,
