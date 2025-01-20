@@ -204,3 +204,8 @@ struct ShiftDetailView: View {
         pulsingRed = false
     }
 }
+struct ShiftDetailView_Previews: PreviewProvider {
+    static var previews : some View{
+        Car(id : UUID(), licensePlate: <#T##String#>, make: <#T##String#>, model: <#T##String#>, color: <#T##String#>, locationParked: String)
+    }
+}

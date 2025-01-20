@@ -9,32 +9,37 @@ import SwiftUI
 
 struct CarRowView: View {
     @EnvironmentObject var shiftStore: ShiftStore
-    let shift: Shift
-    let car: Car
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text("License Plate: \(car.licensePlate)")
-                    .font(.headline)
-                Text("Returned: \(car.isReturned ? "Yes" : "No")")
-                    .font(.subheadline)
-            }
-            Spacer()
-            // Return button if not returned
-            if !car.isReturned && !shift.isEnded {
-                Button("Return") {
-                    shiftStore.returnCar(in: shift, car: car)
-                }
-                .buttonStyle(.bordered)
-            }
-        }
-    }
-}
+    var car: Car
+       
+       var body: some View {
+           HStack {
+               Image(systemName: "car.fill")
+                   .resizable()
+                   .scaledToFit()
+                   .frame(width: 40, height: 40)
+                   .foregroundColor(.blue)
+                   .padding(.trailing, 10)
+               
+               VStack(alignment: .leading) {
+                   Text(car.licensePlate)
+                       .font(.headline)
+                       .foregroundColor(.primary)
+                   Text(car.model)
+                       .font(.subheadline)
+                       .foregroundColor(.secondary)
+               }
+               Spacer()
+           }
+           .padding()
+           .background(Color(UIColor.systemGray6))
+           .cornerRadius(10)
+           .shadow(radius: 2)
+       }
+   }
 
 struct CarRowView_Previews: PreviewProvider {
     static var previews: some View {
-        let previewShift = Shift(customerName: "Test Customer", address: "123 Test St")
+        _ = Shift(customerName: "Test Customer", address: "123 Test St")
         let previewCar = Car(
             photo: UIImage(named: "someImage"), licensePlate: "ABC123",
             make: "Toyota",
@@ -43,7 +48,7 @@ struct CarRowView_Previews: PreviewProvider {
             locationParked: "Front Row"
         )
         
-        return CarRowView(shift: previewShift, car: previewCar)
+        return CarRowView( car: previewCar)
             .environmentObject(ShiftStore())
             .previewLayout(.sizeThatFits)
     }
