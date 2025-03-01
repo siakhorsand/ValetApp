@@ -274,7 +274,7 @@ struct ContentView: View {
 
 // MARK: - Supporting Views
 
-// Enhanced main button with subtitle and parallax effect
+// Enhanced main button with subtitle and flat design
 struct EnhancedMainButton: View {
     let title: String
     let subtitle: String
@@ -292,16 +292,15 @@ struct EnhancedMainButton: View {
             action()
         }) {
             HStack(spacing: 15) {
-                // Icon with glow
+                // Icon with simplified design
                 ZStack {
                     Circle()
-                        .fill(gradient)
+                        .fill(ValetTheme.surfaceVariant)
                         .frame(width: 45, height: 45)
-                        .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
                     
                     Image(systemName: icon)
                         .font(.system(size: 22))
-                        .foregroundColor(.white)
+                        .foregroundColor(ValetTheme.primary)
                 }
                 .scaleEffect(isPressed ? 0.95 : 1)
                 
@@ -310,18 +309,18 @@ struct EnhancedMainButton: View {
                     Text(title)
                         .font(.headline)
                         .fontWeight(.bold)
-                        .foregroundColor(.white)
+                        .foregroundColor(ValetTheme.onSurface)
                     
                     Text(subtitle)
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(ValetTheme.textSecondary)
                 }
                 
                 Spacer()
                 
-                // Chevron
+                // Chevron with primary color
                 Image(systemName: "chevron.right")
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(ValetTheme.primary)
                     .font(.subheadline)
                     .offset(x: isPressed ? -5 : 0)
                     .animation(.easeOut(duration: 0.2), value: isPressed)
@@ -329,39 +328,14 @@ struct EnhancedMainButton: View {
             .padding(.vertical, 16)
             .padding(.horizontal, 20)
             .background(
-                ZStack {
-                    // Button background with gradient
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(gradient)
-                        .shadow(color: Color.black.opacity(0.3), radius: 8, x: 0, y: 4)
-                    
-                    // Shine effect
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    .white.opacity(0.5),
-                                    .clear
-                                ]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .opacity(0.2)
-                        .mask(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [.black, .clear]),
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
-                                )
-                        )
-                }
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(ValetTheme.surfaceVariant)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(ValetTheme.primary.opacity(0.6), lineWidth: 2)
+                    )
             )
             .scaleEffect(isPressed ? 0.98 : 1)
-            .offset(y: isPressed ? 1 : -1)
             .animation(.spring(response: 0.4, dampingFraction: 0.6), value: isPressed)
             .opacity(appear ? 1 : 0)
             .blur(radius: appear ? 0 : 10)

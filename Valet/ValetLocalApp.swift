@@ -9,8 +9,7 @@ import SwiftUI
 
 @main
 struct ValetLocalApp: App {
-    @StateObject var shiftStore = ShiftStore()
-    
+    @StateObject var shiftStore = ShiftStore(withDemoData: true)
     init() {
         // Configure the global appearance for dark mode
         setupAppearance()

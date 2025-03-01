@@ -2,7 +2,7 @@
 //  JoinShiftView.swift
 //  Valet
 //
-//  Created by Sia Khorsand on 2/3/25.
+//  Created by Claude on 2/28/25.
 //
 
 import SwiftUI
@@ -37,7 +37,7 @@ struct JoinShiftView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 24) {
-                // Title with decorative elements
+                // Header with decorative elements
                 HStack {
                     Rectangle()
                         .frame(height: 2)
@@ -272,21 +272,6 @@ struct JoinShiftView: View {
     // Hide keyboard
     private func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-    }
-}
-
-// MARK: - Extensions
-
-// Extension for placeholder text in TextField
-extension View {
-    func placeholder<Content: View>(
-        when shouldShow: Bool,
-        alignment: Alignment = .leading,
-        @ViewBuilder placeholder: () -> Content) -> some View {
-        ZStack(alignment: alignment) {
-            placeholder().opacity(shouldShow ? 1 : 0)
-            self
-        }
     }
 }
 

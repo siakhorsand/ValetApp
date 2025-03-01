@@ -15,6 +15,7 @@ struct ShiftDetailView: View {
     @State private var showEmployeeSheet = false
     @State private var isShareSheetPresented = false
     @State private var showQRCode = false
+    @State private var animateContent = false
 
     // For "End Shift" hold
     @State private var isHoldingEndShift = false
@@ -48,11 +49,19 @@ struct ShiftDetailView: View {
     var body: some View {
         ZStack {
             // Background
-            ValetTheme.background
-                .ignoresSafeArea()
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    ValetTheme.background,
+                    ValetTheme.primaryVariant.opacity(0.15),
+                    ValetTheme.background
+                ]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header Card
+                // Header Card with slide-in animation
                 VStack(spacing: 12) {
                     // Top row with customer name and toggle button
                     HStack {
@@ -69,12 +78,16 @@ struct ShiftDetailView: View {
                         .padding(.horizontal, 10)
                         .background(ValetTheme.surfaceVariant.opacity(0.5))
                         .cornerRadius(8)
+                        .offset(x: animateContent ? 0 : -50)
+                        .opacity(animateContent ? 1 : 0)
 
                         Spacer()
 
                         // Toggle layout button
                         Button(action: {
-                            showAlternativeLayout.toggle()
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                showAlternativeLayout.toggle()
+                            }
                         }) {
                             Image(systemName: showAlternativeLayout ? "list.bullet" : "rectangle.grid.2x2")
                                 .font(.title3)
@@ -83,9 +96,11 @@ struct ShiftDetailView: View {
                                 .background(ValetTheme.surfaceVariant)
                                 .cornerRadius(8)
                         }
+                        .offset(x: animateContent ? 0 : 50)
+                        .opacity(animateContent ? 1 : 0)
                     }
 
-                    // Address and time
+                    // Address and time with fade-in animation
                     HStack(spacing: 8) {
                         Image(systemName: "location.fill")
                             .foregroundColor(ValetTheme.textSecondary)
@@ -95,11 +110,14 @@ struct ShiftDetailView: View {
                             .font(.subheadline)
                             .foregroundColor(ValetTheme.textSecondary)
                     }
+                    .opacity(animateContent ? 1 : 0)
                     
                     // Shift code display with share button
                     HStack {
                         Button(action: {
-                            showQRCode.toggle()
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                showQRCode.toggle()
+                            }
                         }) {
                             HStack {
                                 Text("CODE: ")
@@ -121,6 +139,8 @@ struct ShiftDetailView: View {
                             .background(ValetTheme.surfaceVariant)
                             .cornerRadius(8)
                         }
+                        .scaleEffect(animateContent ? 1 : 0.8)
+                        .opacity(animateContent ? 1 : 0)
                         
                         Spacer()
                         
@@ -134,6 +154,8 @@ struct ShiftDetailView: View {
                                 .background(ValetTheme.primary)
                                 .cornerRadius(8)
                         }
+                        .scaleEffect(animateContent ? 1 : 0.8)
+                        .opacity(animateContent ? 1 : 0)
                     }
                     
                     // QR Code display (conditional)
@@ -144,13 +166,14 @@ struct ShiftDetailView: View {
                                 .padding()
                                 .background(ValetTheme.surfaceVariant)
                                 .cornerRadius(12)
+                                .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 5)
                             
                             Text("Scan to join this shift")
                                 .font(.caption)
                                 .foregroundColor(ValetTheme.textSecondary)
                         }
                         .padding(.vertical, 10)
-                        .transition(.opacity)
+                        .transition(.moveAndFade)
                     }
 
                     // If shift ended, show note
@@ -167,32 +190,36 @@ struct ShiftDetailView: View {
                         .padding(.horizontal, 12)
                         .background(ValetTheme.error.opacity(0.1))
                         .cornerRadius(8)
+                        .opacity(animateContent ? 1 : 0)
                     }
                 }
                 .padding()
                 .background(ValetTheme.surfaceVariant)
                 
-                // Employee list
+                // Employee list with horizontal scrolling
                 if !shift.employees.isEmpty {
                     VStack(alignment: .leading) {
                         Text("TEAM")
                             .font(.caption)
-                            .foregroundColor(ValetTheme.textSecondary)
+                            .fontWeight(.bold)
+                            .foregroundColor(ValetTheme.primary)
                             .padding(.horizontal)
                             .padding(.top, 12)
+                            .opacity(animateContent ? 1 : 0)
                         
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 10) {
+                            HStack(spacing: 12) {
                                 ForEach(shift.employees) { employee in
                                     VStack(spacing: 4) {
                                         Circle()
                                             .fill(employee.color)
-                                            .frame(width: 36, height: 36)
+                                            .frame(width: 40, height: 40)
                                             .overlay(
                                                 Text(employee.name.prefix(1).uppercased())
-                                                    .font(.system(size: 14, weight: .bold))
+                                                    .font(.system(size: 16, weight: .bold))
                                                     .foregroundColor(.white)
                                             )
+                                            .shadow(color: employee.color.opacity(0.5), radius: 4, x: 0, y: 2)
                                         
                                         Text(employee.name)
                                             .font(.caption)
@@ -200,6 +227,8 @@ struct ShiftDetailView: View {
                                             .lineLimit(1)
                                     }
                                     .frame(width: 60)
+                                    .scaleEffect(animateContent ? 1 : 0.8)
+                                    .opacity(animateContent ? 1 : 0)
                                 }
                             }
                             .padding(.horizontal)
@@ -209,7 +238,7 @@ struct ShiftDetailView: View {
                     .background(ValetTheme.background)
                 }
 
-                // Stats summary
+                // Stats summary with cars count
                 HStack(spacing: 20) {
                     StatCard(
                         title: "Active",
@@ -234,13 +263,14 @@ struct ShiftDetailView: View {
                 }
                 .padding(.vertical, 10)
                 .background(ValetTheme.surfaceVariant.opacity(0.5))
+                .opacity(animateContent ? 1 : 0)
 
-                // Car List or Grid
+                // Car List or Grid with Numbered Cars
                 if cars.isEmpty {
+                    // Empty state with animation
                     VStack(spacing: 15) {
-                        Image(systemName: "car")
-                            .font(.system(size: 50))
-                            .foregroundColor(ValetTheme.textSecondary.opacity(0.3))
+                        LottieView(name: "empty-cars")
+                            .frame(width: 120, height: 120)
                         
                         Text("No cars parked yet")
                             .font(.headline)
@@ -254,6 +284,7 @@ struct ShiftDetailView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(ValetTheme.background)
+                    .opacity(animateContent ? 1 : 0)
                 } else {
                     ScrollView {
                         if showAlternativeLayout {
@@ -262,21 +293,61 @@ struct ShiftDetailView: View {
                                         GridItem(.flexible()),
                                         GridItem(.flexible())]
                             LazyVGrid(columns: columns, spacing: 12) {
-                                ForEach(cars) { car in
-                                    EnhancedMiniCarView(car: car, shift: shift)
+                                ForEach(Array(cars.enumerated()), id: \.element.id) { index, car in
+                                    EnhancedMiniCarView(car: car, shift: shift, carIndex: index + 1)
+                                        .opacity(animateContent ? 1 : 0)
+                                        .scaleEffect(animateContent ? 1 : 0.9)
+                                        .animation(.easeOut.delay(Double(index) * 0.05 + 0.2), value: animateContent)
                                 }
                                 if !shift.isEnded {
                                     EnhancedAddCarButton {
                                         showAddCarSheet.toggle()
                                     }
+                                    .opacity(animateContent ? 1 : 0)
+                                    .scaleEffect(animateContent ? 1 : 0.9)
+                                    .animation(.easeOut.delay(Double(cars.count) * 0.05 + 0.3), value: animateContent)
                                 }
                             }
                             .padding()
                         } else {
                             // List layout
                             VStack(spacing: 12) {
-                                ForEach(cars) { car in
-                                    EnhancedCarView(car: car, shift: shift)
+                                ForEach(Array(cars.enumerated()), id: \.element.id) { index, car in
+                                    EnhancedCarView(car: car, shift: shift, carIndex: index + 1)
+                                        .opacity(animateContent ? 1 : 0)
+                                        .offset(x: animateContent ? 0 : (index % 2 == 0 ? -50 : 50))
+                                        .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(Double(index) * 0.05 + 0.2), value: animateContent)
+                                }
+                                
+                                if !shift.isEnded {
+                                    // Add car button in list view
+                                    Button {
+                                        showAddCarSheet.toggle()
+                                    } label: {
+                                        HStack {
+                                            Image(systemName: "plus.circle.fill")
+                                                .font(.system(size: 22))
+                                            Text("Add New Car")
+                                                .font(.headline)
+                                        }
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .frame(maxWidth: .infinity)
+                                        .background(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [ValetTheme.primary, ValetTheme.primaryVariant]),
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            )
+                                        )
+                                        .cornerRadius(12)
+                                        .shadow(color: ValetTheme.primary.opacity(0.3), radius: 5, x: 0, y: 3)
+                                    }
+                                    .padding(.horizontal)
+                                    .padding(.top, 8)
+                                    .opacity(animateContent ? 1 : 0)
+                                    .offset(y: animateContent ? 0 : 30)
+                                    .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(Double(cars.count) * 0.05 + 0.3), value: animateContent)
                                 }
                             }
                             .padding()
@@ -287,99 +358,122 @@ struct ShiftDetailView: View {
                 
                 // Bottom action bar
                 if !shift.isEnded {
-                    // If no cars, show single "Add Car" button
                     if cars.isEmpty {
-                        Button {
-                            showAddCarSheet.toggle()
-                        } label: {
-                            HStack {
-                                Image(systemName: "plus.circle.fill")
-                                Text("Add Car")
-                            }
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(ValetTheme.primaryGradient)
-                            .cornerRadius(0)
-                        }
-                    } else {
-                        // Otherwise show split buttons
-                        HStack(spacing: 0) {
-                            Button {
-                                showEmployeeSheet = true
-                            } label: {
-                                HStack {
-                                    Image(systemName: "person.badge.plus")
-                                    Text("Add Team")
-                                }
-                                .font(.headline)
-                                .foregroundColor(ValetTheme.primary)
-                                .padding(.vertical, 16)
-                                .frame(maxWidth: .infinity)
-                                .background(ValetTheme.surfaceVariant)
-                            }
+                                            VStack(spacing: 0) {
+                                                HStack(spacing: 0) {
+                                                    Button {
+                                                        showEmployeeSheet = true
+                                                    } label: {
+                                                        HStack {
+                                                            Image(systemName: "person.badge.plus")
+                                                            Text("Add Team")
+                                                        }
+                                                        .font(.headline)
+                                                        .foregroundColor(ValetTheme.primary)
+                                                        .padding(.vertical, 16)
+                                                        .frame(maxWidth: .infinity)
+                                                        .background(ValetTheme.surfaceVariant)
+                                                    }
+                                                    .opacity(animateContent ? 1 : 0)
 
+                                                    Button {
+                                                        showAddCarSheet.toggle()
+                                                    } label: {
+                                                        HStack {
+                                                            Image(systemName: "plus.circle.fill")
+                                                            Text("Add Car")
+                                                        }
+                                                        .font(.headline)
+                                                        .foregroundColor(.white)
+                                                        .padding(.vertical, 16)
+                                                        .frame(maxWidth: .infinity)
+                                                        .background(ValetTheme.primaryGradient)
+                                                    }
+                                                    .opacity(animateContent ? 1 : 0)
+                                                }
+                                            }
+                                        } else {
+                        // Otherwise show split buttons
+                        VStack(spacing: 0) {
+                            HStack(spacing: 0) {
+                                Button {
+                                    showEmployeeSheet = true
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "person.badge.plus")
+                                        Text("Add Team")
+                                    }
+                                    .font(.headline)
+                                    .foregroundColor(ValetTheme.primary)
+                                    .padding(.vertical, 16)
+                                    .frame(maxWidth: .infinity)
+                                    .background(ValetTheme.surfaceVariant)
+                                }
+                                .opacity(animateContent ? 1 : 0)
+
+                                Button {
+                                    showAddCarSheet.toggle()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "plus.circle.fill")
+                                        Text("Add Car")
+                                    }
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .padding(.vertical, 16)
+                                    .frame(maxWidth: .infinity)
+                                    .background(ValetTheme.primaryGradient)
+                                }
+                                .opacity(animateContent ? 1 : 0)
+                            }
+                            
+                            // End Shift button
                             Button {
-                                showAddCarSheet.toggle()
+                                // Handled by gesture
                             } label: {
                                 HStack {
-                                    Image(systemName: "plus.circle.fill")
-                                    Text("Add Car")
+                                    if isHoldingEndShift {
+                                        Text("Ending in \(endShiftCountdown)s...")
+                                    } else {
+                                        Image(systemName: "stop.circle.fill")
+                                        Text("End Shift")
+                                    }
                                 }
                                 .font(.headline)
                                 .foregroundColor(.white)
                                 .padding(.vertical, 16)
                                 .frame(maxWidth: .infinity)
-                                .background(ValetTheme.primaryGradient)
+                                .background(
+                                    pulsingRed ?
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [ValetTheme.error, ValetTheme.error.opacity(0.8)]),
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        ) :
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [ValetTheme.error.opacity(0.8), ValetTheme.error.opacity(0.6)]),
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                )
                             }
-                        }
-                        
-                        // End Shift button
-                        Button {
-                            // Handled by gesture
-                        } label: {
-                            HStack {
-                                if isHoldingEndShift {
-                                    Text("Ending in \(endShiftCountdown)s...")
-                                } else {
-                                    Image(systemName: "stop.circle.fill")
-                                    Text("End Shift")
-                                }
-                            }
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding(.vertical, 16)
-                            .frame(maxWidth: .infinity)
-                            .background(
-                                pulsingRed ?
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [ValetTheme.error, ValetTheme.error.opacity(0.8)]),
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    ) :
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [ValetTheme.error.opacity(0.8), ValetTheme.error.opacity(0.6)]),
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                            )
-                        }
-                        .simultaneousGesture(
-                            LongPressGesture(minimumDuration: 5.0)
-                                .onChanged { _ in
-                                    if !isHoldingEndShift {
-                                        isHoldingEndShift = true
-                                        startEndShiftCountdown()
-                                        withAnimation(Animation.easeInOut(duration: 0.6).repeatForever()) {
-                                            pulsingRed = true
+                            .simultaneousGesture(
+                                LongPressGesture(minimumDuration: 5.0)
+                                    .onChanged { _ in
+                                        if !isHoldingEndShift {
+                                            isHoldingEndShift = true
+                                            startEndShiftCountdown()
+                                            withAnimation(Animation.easeInOut(duration: 0.6).repeatForever()) {
+                                                pulsingRed = true
+                                            }
                                         }
                                     }
-                                }
-                                .onEnded { _ in
-                                    endShiftNow()
-                                }
-                        )
+                                    .onEnded { _ in
+                                        endShiftNow()
+                                    }
+                            )
+                            .opacity(animateContent ? 1 : 0)
+                        }
                     }
                 }
             }
@@ -408,6 +502,13 @@ struct ShiftDetailView: View {
             // Share Sheet for iOS to share the shift code
             ShareSheetView(shiftCode: shift.shiftCode, customerName: shift.customerName)
         }
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                    animateContent = true
+                }
+            }
+        }
         .preferredColorScheme(.dark)
     }
 
@@ -433,7 +534,38 @@ struct ShiftDetailView: View {
     }
 }
 
+// Extension for transition animations
+extension AnyTransition {
+    static var moveAndFade: AnyTransition {
+        let insertion = AnyTransition.move(edge: .bottom)
+            .combined(with: .opacity)
+        let removal = AnyTransition.move(edge: .bottom)
+            .combined(with: .opacity)
+        return .asymmetric(insertion: insertion, removal: removal)
+    }
+}
+
 // MARK: - Supporting Views
+
+// Simple Lottie Animation View wrapper
+struct LottieView: View {
+    let name: String
+    
+    var body: some View {
+        // This would normally use Lottie, but for now we'll just use a placeholder
+        ZStack {
+            Image(systemName: "car.circle")
+                .font(.system(size: 60))
+                .foregroundColor(ValetTheme.primary.opacity(0.3))
+                .overlay(
+                    Image(systemName: "plus")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(ValetTheme.primary.opacity(0.7))
+                        .offset(x: 15, y: 15)
+                )
+        }
+    }
+}
 
 // QR Code View
 struct QRCodeView: View {
@@ -466,183 +598,6 @@ struct QRCodeView: View {
         
         // Fallback
         return UIImage(systemName: "qrcode") ?? UIImage()
-    }
-}
-
-// Enhanced Car View for list view
-struct EnhancedCarView: View {
-    @EnvironmentObject var shiftStore: ShiftStore
-    let car: Car
-    let shift: Shift
-    
-    var body: some View {
-        HStack(spacing: 15) {
-            // Left side: Car icon or status indicator
-            ZStack {
-                Circle()
-                    .fill(car.isReturned ? ValetTheme.success : ValetTheme.primary)
-                    .frame(width: 50, height: 50)
-                
-                Image(systemName: car.isReturned ? "checkmark" : "car.fill")
-                    .font(.system(size: 20))
-                    .foregroundColor(.white)
-            }
-            
-            // Middle: Car details
-            VStack(alignment: .leading, spacing: 4) {
-                Text("\(car.make) \(car.model)")
-                    .font(.headline)
-                    .foregroundColor(ValetTheme.onSurface)
-                
-                Text(car.licensePlate)
-                    .font(.subheadline)
-                    .foregroundColor(ValetTheme.primary)
-                
-                Text(car.locationParked)
-                    .font(.caption)
-                    .foregroundColor(ValetTheme.textSecondary)
-            }
-            
-            Spacer()
-            
-            // Right side: Employee indicator & time
-            VStack(alignment: .trailing, spacing: 4) {
-                if let employee = car.parkedBy {
-                    HStack(spacing: 5) {
-                        Circle()
-                            .fill(employee.color)
-                            .frame(width: 10, height: 10)
-                        
-                        Text(employee.name)
-                            .font(.caption)
-                            .foregroundColor(ValetTheme.textSecondary)
-                    }
-                }
-                
-                // Time display
-                if car.isReturned, let departureTime = car.departureTime {
-                    Text(departureTime.toHourString())
-                        .font(.caption)
-                        .foregroundColor(ValetTheme.success)
-                } else {
-                    Text(car.arrivalTime.toHourString())
-                        .font(.caption)
-                        .foregroundColor(ValetTheme.textSecondary)
-                }
-            }
-            .frame(width: 80)
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(ValetTheme.surfaceVariant)
-                .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
-        )
-        .contentShape(Rectangle())
-        .onLongPressGesture(minimumDuration: 2.0) {
-            if !car.isReturned {
-                // Haptic feedback before return
-                let generator = UINotificationFeedbackGenerator()
-                generator.notificationOccurred(.success)
-                
-                shiftStore.returnCar(in: shift, car: car)
-            }
-        }
-    }
-}
-
-// Enhanced Mini Car View for grid view
-struct EnhancedMiniCarView: View {
-    @EnvironmentObject var shiftStore: ShiftStore
-    let car: Car
-    let shift: Shift
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            // Status indicator
-            ZStack {
-                Circle()
-                    .fill(car.isReturned ? ValetTheme.success : ValetTheme.primary)
-                    .frame(width: 48, height: 48)
-                    .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
-                
-                Image(systemName: car.isReturned ? "checkmark" : "car.fill")
-                    .font(.system(size: 20))
-                    .foregroundColor(.white)
-                
-                // Employee indicator dot
-                if let employee = car.parkedBy {
-                    Circle()
-                        .fill(employee.color)
-                        .frame(width: 15, height: 15)
-                        .overlay(
-                            Circle()
-                                .stroke(Color.white, lineWidth: 2)
-                        )
-                        .offset(x: 20, y: -20)
-                }
-            }
-            
-            // License plate
-            Text(car.licensePlate)
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundColor(ValetTheme.onSurface)
-                .lineLimit(1)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 4)
-        }
-        .padding(8)
-        .frame(height: 100)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(ValetTheme.surfaceVariant)
-                .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
-        )
-        .contentShape(Rectangle())
-        .onLongPressGesture(minimumDuration: 2.0) {
-            if !car.isReturned {
-                // Haptic feedback before return
-                let generator = UINotificationFeedbackGenerator()
-                generator.notificationOccurred(.success)
-                
-                shiftStore.returnCar(in: shift, car: car)
-            }
-        }
-    }
-}
-
-// Enhanced Add Car Button for grid view
-struct EnhancedAddCarButton: View {
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            VStack {
-                ZStack {
-                    Circle()
-                        .fill(ValetTheme.primaryGradient)
-                        .frame(width: 48, height: 48)
-                        .shadow(color: ValetTheme.primary.opacity(0.3), radius: 3, x: 0, y: 2)
-                    
-                    Image(systemName: "plus")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundColor(.white)
-                }
-                
-                Text("Add Car")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(ValetTheme.primary)
-            }
-            .padding(8)
-            .frame(height: 100)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(ValetTheme.surfaceVariant.opacity(0.5))
-                    .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
-            )
-        }
     }
 }
 
