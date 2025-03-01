@@ -1,11 +1,10 @@
 //
-//  AddCArView.swift
+//  AddCarSheet.swift
 //  Valet
 //
 //  Created by Sia Khorsand on 1/14/25.
 //
 
-// AddCarSheet.swift
 import SwiftUI
 
 struct AddCarSheet: View {
@@ -19,85 +18,300 @@ struct AddCarSheet: View {
     @State private var color = ""
     @State private var location = ""
     @State private var selectedEmployee: Employee?
+    @State private var showCamera = false
+    @State private var carPhoto: UIImage?
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Add a Car")
-                .font(.headline)
-                .padding(.top, 20)
-
-            VStack(spacing: 15) {
-                TextField("License Plate", text: $licensePlate)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                TextField("Make", text: $make)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                TextField("Model", text: $model)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                TextField("Color", text: $color)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                TextField("Location Parked", text: $location)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-
-                // Picker for employee
-                Picker("Parked by", selection: $selectedEmployee) {
-                    Text("None").tag(Employee?.none)
-                    ForEach(shiftStore.allEmployees, id: \.id) { emp in
-                        Text(emp.name).tag(Employee?.some(emp))
+        ZStack {
+            // Background gradient
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    ValetTheme.background,
+                    ValetTheme.surfaceVariant.opacity(0.3),
+                    ValetTheme.background
+                ]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            
+            VStack(spacing: 20) {
+                // Stylish header
+                VStack(spacing: 10) {
+                    Image(systemName: "car.circle.fill")
+                        .font(.system(size: 40))
+                        .foregroundColor(ValetTheme.primary)
+                        .padding(.top, 20)
+                    
+                    Text("Add New Car")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(ValetTheme.onSurface)
+                }
+                .padding(.bottom, 10)
+                
+                // Input fields with improved styling
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // Photo section
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Image(systemName: "camera")
+                                    .foregroundColor(ValetTheme.primary)
+                                Text("PHOTO")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(ValetTheme.primary)
+                            }
+                            
+                            Button {
+                                showCamera = true
+                            } label: {
+                                Group {
+                                    if let photo = carPhoto {
+                                        Image(uiImage: photo)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(height: 150)
+                                            .clipped()
+                                    } else {
+                                        ZStack {
+                                            Rectangle()
+                                                .fill(ValetTheme.surfaceVariant)
+                                                .frame(height: 150)
+                                            
+                                            VStack(spacing: 10) {
+                                                Image(systemName: "camera.fill")
+                                                    .font(.system(size: 30))
+                                                
+                                                Text("Tap to add photo")
+                                                    .font(.subheadline)
+                                            }
+                                            .foregroundColor(ValetTheme.textSecondary)
+                                        }
+                                    }
+                                }
+                                .cornerRadius(12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(ValetTheme.primary.opacity(0.6), lineWidth: 2)
+                                )
+                            }
+                        }
+                        
+                        // Form fields with consistent styling
+                        StylishFormField(
+                            icon: "number.square.fill",
+                            label: "LICENSE PLATE",
+                            text: $licensePlate
+                        )
+                        .autocapitalization(.allCharacters)
+                        
+                        HStack(spacing: 15) {
+                            StylishFormField(
+                                icon: "car.fill",
+                                label: "MAKE",
+                                text: $make
+                            )
+                            .frame(maxWidth: .infinity)
+                            
+                            StylishFormField(
+                                icon: "car.2.fill",
+                                label: "MODEL",
+                                text: $model
+                            )
+                            .frame(maxWidth: .infinity)
+                        }
+                        
+                        StylishFormField(
+                            icon: "paintpalette.fill",
+                            label: "COLOR",
+                            text: $color
+                        )
+                        
+                        StylishFormField(
+                            icon: "location.fill",
+                            label: "LOCATION PARKED",
+                            text: $location
+                        )
+                        
+                        // Employee selection with matching style
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Image(systemName: "person.fill")
+                                    .foregroundColor(ValetTheme.primary)
+                                Text("PARKED BY")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(ValetTheme.primary)
+                            }
+                            
+                            Menu {
+                                Button("None") {
+                                    selectedEmployee = nil
+                                }
+                                
+                                ForEach(shiftStore.allEmployees, id: \.id) { emp in
+                                    Button(emp.name) {
+                                        selectedEmployee = emp
+                                    }
+                                }
+                            } label: {
+                                HStack {
+                                    if let employee = selectedEmployee {
+                                        HStack {
+                                            Circle()
+                                                .fill(employee.color)
+                                                .frame(width: 16, height: 16)
+                                            
+                                            Text(employee.name)
+                                                .foregroundColor(ValetTheme.onSurface)
+                                        }
+                                    } else {
+                                        Text("Select employee")
+                                            .foregroundColor(ValetTheme.textSecondary)
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "chevron.down")
+                                        .font(.caption)
+                                        .foregroundColor(ValetTheme.textSecondary)
+                                }
+                                .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(ValetTheme.surfaceVariant)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(ValetTheme.primary.opacity(0.6), lineWidth: 2)
+                                )
+                            }
+                        }
                     }
+                    .padding(.horizontal)
                 }
-                .pickerStyle(.menu)
+                
+                Spacer()
+                
+                // Action buttons
+                VStack(spacing: 15) {
+                    Button(action: {
+                        addNewCar()
+                    }) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                            Text("Add Car")
+                        }
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            isFormValid ?
+                                ValetTheme.primaryGradient :
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color.gray.opacity(0.6), Color.gray.opacity(0.4)]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                        )
+                        .cornerRadius(15)
+                        .shadow(color: isFormValid ? ValetTheme.primary.opacity(0.3) : Color.clear, radius: 5, x: 0, y: 3)
+                    }
+                    .disabled(!isFormValid)
+                    
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .font(.headline)
+                    .foregroundColor(ValetTheme.textSecondary)
+                    .padding(.vertical, 10)
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 20)
             }
-            .padding(.horizontal)
-            .frame(maxWidth: 300)
-            .padding()
-
-            Spacer()
-
-            HStack {
-                Button("Cancel") {
-                    dismiss()
-                }
-                .frame(maxWidth: .infinity, maxHeight: 50)
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(8)
-
-                Button("Add Car") {
-                    guard !licensePlate.isEmpty,
-                          !make.isEmpty,
-                          !model.isEmpty,
-                          !color.isEmpty,
-                          !location.isEmpty
-                    else { return }
-
-                    shiftStore.addCar(
-                        to: shift,
-                        licensePlate: licensePlate,
-                        make: make,
-                        model: model,
-                        color: color,
-                        location: location,
-                        parkedBy: selectedEmployee
-                    )
-                    dismiss()
-                }
-                .frame(maxWidth: .infinity, maxHeight: 50)
-                .background(
-                    (!licensePlate.isEmpty && !make.isEmpty && !model.isEmpty &&
-                     !color.isEmpty && !location.isEmpty)
-                    ? Color.blue : Color.gray
-                )
-                .foregroundColor(.white)
-                .cornerRadius(8)
-            }
-            .padding(.horizontal)
-            .padding(.bottom, 20)
         }
-        .frame(height: 450)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(0.8))
+        .sheet(isPresented: $showCamera) {
+            ImagePicker(image: $carPhoto)
+        }
+        .preferredColorScheme(.dark)
+        .onTapGesture {
+            hideKeyboard()
+        }
+    }
+    
+    // Form validation
+    private var isFormValid: Bool {
+        !licensePlate.isEmpty &&
+        !make.isEmpty &&
+        !model.isEmpty &&
+        !color.isEmpty &&
+        !location.isEmpty
+    }
+    
+    // Add car and close the sheet
+    private func addNewCar() {
+        guard isFormValid else { return }
+        
+        shiftStore.addCar(
+            to: shift,
+            licensePlate: licensePlate,
+            make: make,
+            model: model,
+            color: color,
+            location: location,
+            parkedBy: selectedEmployee
         )
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .padding()
+        
+        // Success haptic
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
+        
+        dismiss()
+    }
+    
+    // Hide keyboard
+    private func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+
+// MARK: - Supporting Views
+
+// Stylish Form Field
+struct StylishFormField: View {
+    var icon: String
+    var label: String
+    @Binding var text: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundColor(ValetTheme.primary)
+                Text(label)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(ValetTheme.primary)
+            }
+            
+            TextField("", text: $text)
+                .placeholder(when: text.isEmpty) {
+                    Text("Enter \(label.lowercased())")
+                        .foregroundColor(ValetTheme.textSecondary.opacity(0.7))
+                }
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(ValetTheme.surfaceVariant)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(ValetTheme.primary.opacity(0.6), lineWidth: 2)
+                )
+                .foregroundColor(ValetTheme.onSurface)
+        }
     }
 }
