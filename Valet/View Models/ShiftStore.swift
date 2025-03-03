@@ -45,16 +45,21 @@ class ShiftStore: ObservableObject {
                 model: String,
                 color: String,
                 location: String,
-                parkedBy: Employee?) {
+                parkedBy: Employee?,
+                photo: UIImage? = nil,
+                latitude: Double? = nil,
+                longitude: Double? = nil) {
         guard let idx = shifts.firstIndex(where: { $0.id == shift.id }) else { return }
         let newCar = Car(
-            photo: nil,
+            photo: photo,
             licensePlate: licensePlate,
             make: make,
             model: model,
             color: color,
             locationParked: location,
-            parkedBy: parkedBy
+            parkedBy: parkedBy,
+            parkingLatitude: latitude,
+            parkingLongitude: longitude
         )
         shifts[idx].cars.append(newCar)
         if let updatedShift = shifts.first(where: { $0.id == shift.id }) {
@@ -116,7 +121,7 @@ class ShiftStore: ObservableObject {
     // This would normally integrate with Firebase/Firestore
     // For now, we'll simulate with placeholder methods
     
-    private func syncShiftToCloud(_ shift: Shift) {
+    func syncShiftToCloud(_ shift: Shift) {
         // In a real implementation, this would send the shift data to Firebase
         isSyncing = true
         

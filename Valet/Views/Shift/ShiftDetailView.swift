@@ -507,7 +507,9 @@ struct ShiftDetailView: View {
                 withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
                     animateContent = true
                 }
+                
             }
+            
         }
         .preferredColorScheme(.dark)
     }

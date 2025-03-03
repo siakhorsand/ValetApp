@@ -20,5 +20,10 @@ struct Car: Identifiable {
     var departureTime: Date?
     var isReturned: Bool = false
     var parkedBy: Employee? // Which employee parked the car
+    var parkingLatitude: Double?
+    var parkingLongitude: Double?
     
+    var hasCoordinates: Bool {
+        return parkingLatitude != nil && parkingLongitude != nil
+    }
 }

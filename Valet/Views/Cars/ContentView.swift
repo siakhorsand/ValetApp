@@ -221,17 +221,34 @@ struct ContentView: View {
                 }
             }
             .navigationBarHidden(true)
-            // Sheet for creating new shift
-            .sheet(isPresented: $showNewShiftSheet) {
-                NewShiftSheet { newShiftId in
-                    // After creation, we can jump to that shift detail
-                    selectedShiftId = newShiftId
+            // Floating modal for creating new shift
+            .overlay {
+                if showNewShiftSheet {
+                    Color.black.opacity(0.5)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                showNewShiftSheet = false
+                            }
+                        }
+                    
+                    NewShiftSheet(
+                        onShiftCreated: { newShiftId in
+                            // After creation, we can jump to that shift detail
+                            selectedShiftId = newShiftId
+                        },
+                        onCancel: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                showNewShiftSheet = false
+                            }
+                        }
+                    )
+                    .preferredColorScheme(.dark)
+                    .transition(.scale.combined(with: .opacity))
                 }
-                .preferredColorScheme(.dark)
-                .presentationDetents([.medium, .fraction(0.4)])
-                .presentationDragIndicator(.visible)
-                .background(ValetTheme.background)
             }
+            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showNewShiftSheet)
+            
             // Sheet for joining a shift
             .sheet(isPresented: $showJoinShiftSheet) {
                 JoinShiftView()

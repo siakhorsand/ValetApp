@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import MapKit
+import CoreLocation
 
 // Enhanced Car View for list view with numbers
 struct EnhancedCarView: View {
@@ -15,6 +17,7 @@ struct EnhancedCarView: View {
     let carIndex: Int
     @State private var showDetailView = false
     @State private var isPressed = false
+    @State private var mapCoordinate: CLLocationCoordinate2D?
     
     var body: some View {
         Button(action: {
@@ -76,7 +79,7 @@ struct EnhancedCarView: View {
                 
                 Spacer()
                 
-                // Right side: Employee indicator & time
+                // Right side: Employee indicator & time / Map preview
                 VStack(alignment: .trailing, spacing: 4) {
                     if let employee = car.parkedBy {
                         HStack(spacing: 5) {
@@ -113,10 +116,18 @@ struct EnhancedCarView: View {
                         }
                     }
                     
-                    // Tap to view hint
-                    Text("Tap to view")
-                        .font(.system(size: 9))
-                        .foregroundColor(ValetTheme.textSecondary.opacity(0.7))
+                    // Mini map preview (if coordinates exist)
+                    if car.hasCoordinates {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(ValetTheme.surfaceVariant)
+                                .frame(width: 45, height: 30)
+                            
+                            Image(systemName: "mappin.circle.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(ValetTheme.primary)
+                        }
+                    }
                 }
                 .frame(width: 80)
             }
@@ -164,6 +175,12 @@ struct EnhancedCarView: View {
             DetailedCarView(car: car, carIndex: carIndex)
                 .preferredColorScheme(.dark)
         }
+        .onAppear {
+            // Initialize mapCoordinate in onAppear instead of in the view body
+            if car.hasCoordinates, let lat = car.parkingLatitude, let lon = car.parkingLongitude {
+                mapCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            }
+        }
     }
 }
 
@@ -202,6 +219,16 @@ struct EnhancedMiniCarView: View {
                                     .stroke(Color.white, lineWidth: 2)
                             )
                             .offset(x: 20, y: -20)
+                    }
+                    
+                    // Map pin if location is available
+                    if car.hasCoordinates {
+                        Image(systemName: "mappin.circle.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.white)
+                            .background(ValetTheme.primary)
+                            .clipShape(Circle())
+                            .offset(x: -20, y: -20)
                     }
                 }
                 
@@ -345,6 +372,8 @@ struct DetailedCarView: View {
     let carIndex: Int
     @Environment(\.dismiss) var dismiss
     @State private var animateContent = false
+    @State private var mapCoordinate: CLLocationCoordinate2D?
+    @State private var showFullScreenMap = false
     
     var body: some View {
         ZStack {
@@ -514,6 +543,33 @@ struct DetailedCarView: View {
                             delay: 0.1
                         )
                         
+                        // Map view if coordinates are available
+                        if car.hasCoordinates {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Image(systemName: "map.fill")
+                                        .foregroundColor(ValetTheme.primary)
+                                    
+                                    Text("MAP LOCATION")
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(ValetTheme.textSecondary)
+                                }
+                                
+                                // Mini map view - no coordinate initialization here
+                                MiniMapView(
+                                    coordinate: $mapCoordinate,
+                                    carInfo: "\(car.make) \(car.model) - \(car.licensePlate)",
+                                    height: 180
+                                ) {
+                                    showFullScreenMap = true
+                                }
+                            }
+                            .padding(.horizontal)
+                            .offset(y: animateContent ? 0 : 50 + 0.15 * 10)
+                            .opacity(animateContent ? 1 : 0)
+                        }
+                        
                         // Time details
                         DetailField(
                             title: "ARRIVAL TIME",
@@ -616,8 +672,55 @@ struct DetailedCarView: View {
             }
         }
         .onAppear {
+            // Animate content
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
                 animateContent = true
+            }
+            
+            // Initialize coordinate state here
+            if car.hasCoordinates, let lat = car.parkingLatitude, let lon = car.parkingLongitude {
+                self.mapCoordinate = CLLocationCoordinate2D(
+                    latitude: lat,
+                    longitude: lon
+                )
+            }
+        }
+        .sheet(isPresented: $showFullScreenMap) {
+            if let coord = mapCoordinate {
+                VStack(spacing: 0) {
+                    // Header
+                    HStack {
+                        Button(action: {
+                            showFullScreenMap = false
+                        }) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(ValetTheme.onSurface)
+                                .padding(10)
+                                .background(ValetTheme.surfaceVariant)
+                                .clipShape(Circle())
+                        }
+                        .padding(.leading)
+                        
+                        Spacer()
+                        
+                        Text("\(car.make) \(car.model) - \(car.licensePlate)")
+                            .font(.headline)
+                            .foregroundColor(ValetTheme.onSurface)
+                        
+                        Spacer()
+                    }
+                    .padding(.vertical, 12)
+                    .background(ValetTheme.surfaceVariant)
+                    
+                    // Full map
+                    ParkingLocationMapView(
+                        coordinate: $mapCoordinate,
+                        carInfo: "\(car.make) \(car.model) - \(car.licensePlate)",
+                        isEditable: false
+                    )
+                }
+                .preferredColorScheme(.dark)
             }
         }
     }

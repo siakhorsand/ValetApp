@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import MapKit
+import CoreLocation
 
 struct AddCarSheet: View {
     @Environment(\.dismiss) var dismiss
@@ -20,6 +22,9 @@ struct AddCarSheet: View {
     @State private var selectedEmployee: Employee?
     @State private var showCamera = false
     @State private var carPhoto: UIImage?
+    @State private var showMapSheet = false
+    @State private var coordinate: CLLocationCoordinate2D?
+    @State private var useDirectPhoto = false
 
     var body: some View {
         ZStack {
@@ -65,6 +70,8 @@ struct AddCarSheet: View {
                             }
                             
                             Button {
+                                // Show action sheet for camera options
+                                useDirectPhoto = true
                                 showCamera = true
                             } label: {
                                 Group {
@@ -84,7 +91,7 @@ struct AddCarSheet: View {
                                                 Image(systemName: "camera.fill")
                                                     .font(.system(size: 30))
                                                 
-                                                Text("Tap to add photo")
+                                                Text("Tap to take photo")
                                                     .font(.subheadline)
                                             }
                                             .foregroundColor(ValetTheme.textSecondary)
@@ -129,11 +136,82 @@ struct AddCarSheet: View {
                             text: $color
                         )
                         
-                        StylishFormField(
-                            icon: "location.fill",
-                            label: "LOCATION PARKED",
-                            text: $location
-                        )
+                        // Location field with map
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Image(systemName: "location.fill")
+                                    .foregroundColor(ValetTheme.primary)
+                                Text("LOCATION PARKED")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(ValetTheme.primary)
+                            }
+                            
+                            TextField("", text: $location)
+                                .placeholder(when: location.isEmpty) {
+                                    Text("Enter location parked")
+                                        .foregroundColor(ValetTheme.textSecondary.opacity(0.7))
+                                }
+                                .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(ValetTheme.surfaceVariant)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(ValetTheme.primary.opacity(0.6), lineWidth: 2)
+                                )
+                                .foregroundColor(ValetTheme.onSurface)
+                            
+                            // Mini map preview
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Image(systemName: "mappin.and.ellipse")
+                                        .foregroundColor(ValetTheme.primary)
+                                    Text("MAP LOCATION")
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(ValetTheme.primary)
+                                    
+                                    Spacer()
+                                    
+                                    // Status indicator
+                                    if coordinate != nil {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundColor(ValetTheme.success)
+                                                .font(.caption)
+                                            
+                                            Text("Location set")
+                                                .font(.caption)
+                                                .foregroundColor(ValetTheme.success)
+                                        }
+                                    } else {
+                                        Button(action: {
+                                            showMapSheet = true
+                                        }) {
+                                            HStack(spacing: 4) {
+                                                Image(systemName: "plus.circle.fill")
+                                                    .font(.caption)
+                                                
+                                                Text("Add pin")
+                                                    .font(.caption)
+                                            }
+                                            .foregroundColor(ValetTheme.primary)
+                                        }
+                                    }
+                                }
+                                
+                                // Mini map view - tappable to open full map
+                                MiniMapView(
+                                    coordinate: $coordinate,
+                                    carInfo: "\(make) \(model)",
+                                    height: 130
+                                ) {
+                                    showMapSheet = true
+                                }
+                            }
+                        }
                         
                         // Employee selection with matching style
                         VStack(alignment: .leading, spacing: 8) {
@@ -234,7 +312,52 @@ struct AddCarSheet: View {
             }
         }
         .sheet(isPresented: $showCamera) {
-            ImagePicker(image: $carPhoto)
+            if useDirectPhoto {
+                DirectCameraView(image: $carPhoto, isPresented: $showCamera)
+                    .preferredColorScheme(.dark)
+            } else {
+                ImagePicker(image: $carPhoto)
+            }
+        }
+        .sheet(isPresented: $showMapSheet) {
+            VStack(spacing: 0) {
+                // Header
+                HStack {
+                    Button(action: {
+                        showMapSheet = false
+                    }) {
+                        Image(systemName: "xmark")
+                            .font(.title3)
+                            .foregroundColor(ValetTheme.onSurface)
+                            .padding(10)
+                    }
+                    
+                    Spacer()
+                    
+                    Text("Set Parking Location")
+                        .font(.headline)
+                        .foregroundColor(ValetTheme.primary)
+                    
+                    Spacer()
+                    
+                    Button("Done") {
+                        showMapSheet = false
+                    }
+                    .font(.headline)
+                    .foregroundColor(ValetTheme.primary)
+                    .padding(10)
+                }
+                .padding(.horizontal)
+                .background(ValetTheme.surfaceVariant)
+                
+                // Map
+                ParkingLocationMapView(
+                    coordinate: $coordinate,
+                    carInfo: "\(make) \(model) - \(licensePlate)",
+                    isEditable: true
+                )
+            }
+            .preferredColorScheme(.dark)
         }
         .preferredColorScheme(.dark)
         .onTapGesture {
@@ -255,15 +378,26 @@ struct AddCarSheet: View {
     private func addNewCar() {
         guard isFormValid else { return }
         
-        shiftStore.addCar(
-            to: shift,
+        // Create the car with location coordinates
+        let newCar = Car(
+            photo: carPhoto,
             licensePlate: licensePlate,
             make: make,
             model: model,
             color: color,
-            location: location,
-            parkedBy: selectedEmployee
+            locationParked: location,
+            parkedBy: selectedEmployee,
+            parkingLatitude: coordinate?.latitude,
+            parkingLongitude: coordinate?.longitude
         )
+        
+        // Add to the shift
+        guard let shiftIdx = shiftStore.shifts.firstIndex(where: { $0.id == shift.id }) else { return }
+        shiftStore.shifts[shiftIdx].cars.append(newCar)
+        
+        if let updatedShift = shiftStore.shifts.first(where: { $0.id == shift.id }) {
+            shiftStore.syncShiftToCloud(updatedShift)
+        }
         
         // Success haptic
         let generator = UINotificationFeedbackGenerator()
