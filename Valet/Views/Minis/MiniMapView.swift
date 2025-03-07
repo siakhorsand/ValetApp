@@ -2,8 +2,6 @@
 //  MiniMapView.swift
 //  Valet
 //
-//  Created by Claude on 3/3/2025.
-//
 
 import SwiftUI
 import MapKit

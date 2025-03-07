@@ -10,6 +10,8 @@ import SwiftUI
 @main
 struct ValetLocalApp: App {
     @StateObject var shiftStore = ShiftStore(withDemoData: true)
+    @StateObject var userManager = UserManager.shared
+    
     init() {
         // Configure the global appearance for dark mode
         setupAppearance()
@@ -17,9 +19,19 @@ struct ValetLocalApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(shiftStore)
-                .preferredColorScheme(.dark) // Force dark mode throughout the app
+            ZStack {
+                if userManager.isLoggedIn {
+                    // Show main app content when logged in
+                    ContentView()
+                        .environmentObject(shiftStore)
+                        .environmentObject(userManager)
+                } else {
+                    // Show login screen when not logged in
+                    LoginView()
+                        .environmentObject(userManager)
+                }
+            }
+            .preferredColorScheme(.dark) // Force dark mode throughout the app
         }
     }
     

@@ -12,6 +12,7 @@ import CoreLocation
 struct AddCarSheet: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var shiftStore: ShiftStore
+    @EnvironmentObject var userManager: UserManager
     let shift: Shift
 
     @State private var licensePlate = ""
@@ -136,7 +137,6 @@ struct AddCarSheet: View {
                             text: $color
                         )
                         
-                        // Location field with map
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
                                 Image(systemName: "location.fill")
@@ -163,7 +163,6 @@ struct AddCarSheet: View {
                                 )
                                 .foregroundColor(ValetTheme.onSurface)
                             
-                            // Mini map preview
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack {
                                     Image(systemName: "mappin.and.ellipse")
@@ -175,7 +174,6 @@ struct AddCarSheet: View {
                                     
                                     Spacer()
                                     
-                                    // Status indicator
                                     if coordinate != nil {
                                         HStack(spacing: 4) {
                                             Image(systemName: "checkmark.circle.fill")
@@ -202,7 +200,6 @@ struct AddCarSheet: View {
                                     }
                                 }
                                 
-                                // Mini map view - tappable to open full map
                                 MiniMapView(
                                     coordinate: $coordinate,
                                     carInfo: "\(make) \(model)",
@@ -213,7 +210,6 @@ struct AddCarSheet: View {
                             }
                         }
                         
-                        // Employee selection with matching style
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
                                 Image(systemName: "person.fill")
@@ -224,19 +220,11 @@ struct AddCarSheet: View {
                                     .foregroundColor(ValetTheme.primary)
                             }
                             
-                            Menu {
-                                Button("None") {
-                                    selectedEmployee = nil
-                                }
+                            if let user = userManager.currentUser {
+                                let existingEmployee = shiftStore.allEmployees.first(where: { $0.name == user.name })
                                 
-                                ForEach(shiftStore.allEmployees, id: \.id) { emp in
-                                    Button(emp.name) {
-                                        selectedEmployee = emp
-                                    }
-                                }
-                            } label: {
                                 HStack {
-                                    if let employee = selectedEmployee {
+                                    if let employee = existingEmployee {
                                         HStack {
                                             Circle()
                                                 .fill(employee.color)
@@ -246,15 +234,19 @@ struct AddCarSheet: View {
                                                 .foregroundColor(ValetTheme.onSurface)
                                         }
                                     } else {
-                                        Text("Select employee")
-                                            .foregroundColor(ValetTheme.textSecondary)
+                                        Text(user.name)
+                                            .foregroundColor(ValetTheme.onSurface)
                                     }
                                     
                                     Spacer()
                                     
-                                    Image(systemName: "chevron.down")
-                                        .font(.caption)
-                                        .foregroundColor(ValetTheme.textSecondary)
+                                    Text("From Profile")
+                                        .font(.caption2)
+                                        .padding(.vertical, 4)
+                                        .padding(.horizontal, 8)
+                                        .background(ValetTheme.primary.opacity(0.2))
+                                        .cornerRadius(4)
+                                        .foregroundColor(ValetTheme.primary.opacity(0.8))
                                 }
                                 .padding()
                                 .background(
@@ -273,7 +265,6 @@ struct AddCarSheet: View {
                 
                 Spacer()
                 
-                // Action buttons
                 VStack(spacing: 15) {
                     Button(action: {
                         addNewCar()
@@ -321,7 +312,6 @@ struct AddCarSheet: View {
         }
         .sheet(isPresented: $showMapSheet) {
             VStack(spacing: 0) {
-                // Header
                 HStack {
                     Button(action: {
                         showMapSheet = false
@@ -350,7 +340,6 @@ struct AddCarSheet: View {
                 .padding(.horizontal)
                 .background(ValetTheme.surfaceVariant)
                 
-                // Map
                 ParkingLocationMapView(
                     coordinate: $coordinate,
                     carInfo: "\(make) \(model) - \(licensePlate)",
@@ -363,6 +352,13 @@ struct AddCarSheet: View {
         .onTapGesture {
             hideKeyboard()
         }
+        .onAppear {
+            if let user = userManager.currentUser {
+                let existingEmployee = shiftStore.allEmployees.first(where: { $0.name == user.name })
+                selectedEmployee = existingEmployee
+                
+            }
+        }
     }
     
     // Form validation
@@ -371,12 +367,28 @@ struct AddCarSheet: View {
         !make.isEmpty &&
         !model.isEmpty &&
         !color.isEmpty &&
-        !location.isEmpty
+        !location.isEmpty &&
+        userManager.currentUser != nil
     }
     
-    // Add car and close the sheet
+
     private func addNewCar() {
-        guard isFormValid else { return }
+        guard isFormValid, let user = userManager.currentUser else { return }
+        
+
+        var employee: Employee
+        if let existingEmployee = selectedEmployee {
+            employee = existingEmployee
+        } else {
+            let randomColor = Color(
+                hue: Double.random(in: 0...1),
+                saturation: 0.7,
+                brightness: 0.9
+            )
+            employee = Employee(name: user.name, color: randomColor)
+            
+            shiftStore.allEmployees.append(employee)
+        }
         
         // Create the car with location coordinates
         let newCar = Car(
@@ -386,7 +398,7 @@ struct AddCarSheet: View {
             model: model,
             color: color,
             locationParked: location,
-            parkedBy: selectedEmployee,
+            parkedBy: employee,
             parkingLatitude: coordinate?.latitude,
             parkingLongitude: coordinate?.longitude
         )
@@ -412,40 +424,18 @@ struct AddCarSheet: View {
     }
 }
 
-// MARK: - Supporting Views
-
-// Stylish Form Field
-struct StylishFormField: View {
-    var icon: String
-    var label: String
-    @Binding var text: String
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: icon)
-                    .foregroundColor(ValetTheme.primary)
-                Text(label)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(ValetTheme.primary)
-            }
-            
-            TextField("", text: $text)
-                .placeholder(when: text.isEmpty) {
-                    Text("Enter \(label.lowercased())")
-                        .foregroundColor(ValetTheme.textSecondary.opacity(0.7))
-                }
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(ValetTheme.surfaceVariant)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(ValetTheme.primary.opacity(0.6), lineWidth: 2)
-                )
-                .foregroundColor(ValetTheme.onSurface)
+#if DEBUG
+struct AddCarSheet_Previews: PreviewProvider {
+    static var previews: some View {
+        let shiftStore = ShiftStore(withDemoData: true)
+        let shift = shiftStore.shifts.first!
+        
+        return Group {
+            AddCarSheet(shift: shift)
+                .environmentObject(shiftStore)
+                .environmentObject(UserManager.shared)
+                .preferredColorScheme(.dark)
         }
     }
 }
+#endif

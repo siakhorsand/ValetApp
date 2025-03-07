@@ -9,6 +9,7 @@ import SwiftUI
 
 struct NewShiftSheet: View {
     @EnvironmentObject var shiftStore: ShiftStore
+    @EnvironmentObject var userManager: UserManager
     @Environment(\.dismiss) var dismiss
 
     @State private var customerName = ""
@@ -49,12 +50,59 @@ struct NewShiftSheet: View {
             }
             .padding(.bottom, 20)
 
-            // Input fields
+
             VStack(spacing: 20) {
-                // Customer Name field
+ 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Image(systemName: "person.fill")
+                            .foregroundColor(ValetTheme.primary)
+                        Text("YOUR PROFILE")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(ValetTheme.primary)
+                    }
+                    
+                    HStack(spacing: 12) {
+                        if let user = userManager.currentUser {
+                            // Avatar
+                            ZStack {
+                                Circle()
+                                    .fill(ValetTheme.primary.opacity(0.2))
+                                    .frame(width: 36, height: 36)
+                                
+                                Text(user.name.prefix(1).uppercased())
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundColor(ValetTheme.primary)
+                            }
+                            
+                            // User info
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(user.name)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(ValetTheme.onSurface)
+                                
+                                Text("Logged in")
+                                    .font(.caption2)
+                                    .foregroundColor(ValetTheme.textSecondary)
+                            }
+                        }
+                        
+                        Spacer()
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .background(ValetTheme.surfaceVariant.opacity(0.5))
+                    .cornerRadius(8)
+                }
+                .offset(y: animateContent ? 0 : 10)
+                .opacity(animateContent ? 1 : 0)
+                
+
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "building.2.fill")
                             .foregroundColor(ValetTheme.primary)
                         Text("CUSTOMER NAME")
                             .font(.caption)
@@ -81,8 +129,7 @@ struct NewShiftSheet: View {
                 }
                 .offset(y: animateContent ? 0 : 10)
                 .opacity(animateContent ? 1 : 0)
-                
-                // Address field
+
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Image(systemName: "location.fill")
@@ -115,7 +162,7 @@ struct NewShiftSheet: View {
             .padding(.horizontal, 25)
             .padding(.bottom, 30)
 
-            // Action buttons
+
             HStack(spacing: 15) {
                 Button("Cancel") {
                     onCancel()
@@ -130,15 +177,19 @@ struct NewShiftSheet: View {
                 )
                 
                 Button("Create Shift") {
-                    guard !customerName.isEmpty, !address.isEmpty else { return }
+                    guard let user = userManager.currentUser, !customerName.isEmpty, !address.isEmpty else { return }
+                    
+
                     let newShift = shiftStore.startShift(customerName: customerName, address: address)
+
+                    shiftStore.addEmployeeToShift(name: user.name, shift: newShift)
                     
                     // Haptic feedback
                     let generator = UINotificationFeedbackGenerator()
                     generator.notificationOccurred(.success)
                     
                     onShiftCreated(newShift.id)
-                    onCancel() // Use onCancel instead of dismiss()
+                    onCancel()
                 }
                 .font(.headline)
                 .foregroundColor(.white)
@@ -162,7 +213,7 @@ struct NewShiftSheet: View {
             .offset(y: animateContent ? 0 : 20)
             .opacity(animateContent ? 1 : 0)
         }
-        .frame(width: 350, height: 400)
+        .frame(width: 350, height: 550)
         .background(
             RoundedRectangle(cornerRadius: 24)
                 .fill(ValetTheme.background)
@@ -178,3 +229,23 @@ struct NewShiftSheet: View {
         .preferredColorScheme(.dark)
     }
 }
+
+
+#if DEBUG
+struct NewShiftSheet_Previews: PreviewProvider {
+    static var previews: some View {
+        ZStack {
+            Color.black.opacity(0.5)
+                .ignoresSafeArea()
+            
+            NewShiftSheet(
+                onShiftCreated: { _ in },
+                onCancel: {}
+            )
+        }
+        .environmentObject(ShiftStore(withDemoData: true))
+        .environmentObject(UserManager.shared)
+        .preferredColorScheme(.dark)
+    }
+}
+#endif

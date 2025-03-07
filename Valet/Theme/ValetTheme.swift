@@ -115,3 +115,102 @@ extension Color {
         )
     }
 }
+#if DEBUG
+struct ValetTheme_Previews: PreviewProvider {
+    static var previews: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                // Colors
+                Group {
+                    Text("Theme Colors")
+                        .font(.headline)
+                    
+                    HStack {
+                        ColorSwatch(color: ValetTheme.background, name: "Background")
+                        ColorSwatch(color: ValetTheme.surface, name: "Surface")
+                        ColorSwatch(color: ValetTheme.surfaceVariant, name: "SurfaceVariant")
+                    }
+                    
+                    HStack {
+                        ColorSwatch(color: ValetTheme.primary, name: "Primary")
+                        ColorSwatch(color: ValetTheme.primaryVariant, name: "PrimaryVariant")
+                        ColorSwatch(color: ValetTheme.secondary, name: "Secondary")
+                    }
+                    
+                    HStack {
+                        ColorSwatch(color: ValetTheme.success, name: "Success")
+                        ColorSwatch(color: ValetTheme.warning, name: "Warning")
+                        ColorSwatch(color: ValetTheme.error, name: "Error")
+                    }
+                }
+                
+                // Gradients
+                Group {
+                    Text("Theme Gradients")
+                        .font(.headline)
+                    
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(ValetTheme.primaryGradient)
+                        .frame(height: 50)
+                        .overlay(Text("Primary Gradient").foregroundColor(.white))
+                    
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(ValetTheme.accentGradient)
+                        .frame(height: 50)
+                        .overlay(Text("Accent Gradient").foregroundColor(.white))
+                }
+                
+                // Buttons
+                Group {
+                    Text("Theme Buttons")
+                        .font(.headline)
+                    
+                    Button("Primary Button") {}
+                        .buttonStyle(ValetTheme.PrimaryButtonStyle())
+                    
+                    Button("Secondary Button") {}
+                        .buttonStyle(ValetTheme.SecondaryButtonStyle())
+                    
+                    Button("Text Button") {}
+                        .buttonStyle(ValetTheme.TextButtonStyle())
+                }
+                
+                // Card
+                Group {
+                    Text("Theme Card")
+                        .font(.headline)
+                    
+                    ValetTheme.card(isActive: true)
+                        .frame(height: 100)
+                        .overlay(Text("Active Card").foregroundColor(.white))
+                    
+                    ValetTheme.card(isActive: false)
+                        .frame(height: 100)
+                        .overlay(Text("Inactive Card").foregroundColor(.white))
+                }
+            }
+            .padding()
+        }
+        .background(ValetTheme.background)
+        .preferredColorScheme(.dark)
+    }
+    
+    // Helper view for color swatches
+    struct ColorSwatch: View {
+        let color: Color
+        let name: String
+        
+        var body: some View {
+            VStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(color)
+                    .frame(width: 100, height: 50)
+                
+                Text(name)
+                    .font(.caption)
+                    .foregroundColor(.white)
+            }
+        }
+    }
+}
+#endif

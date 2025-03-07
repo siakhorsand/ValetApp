@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUICore
 
 extension Date {
     /// Rounds the date to the nearest 15 minutes (down or up).
@@ -45,5 +46,16 @@ extension String {
             // Single name fallback
             return self
         }
+    }
+}
+
+
+extension AnyTransition {
+    static var moveAndFade: AnyTransition {
+        let insertion = AnyTransition.move(edge: .bottom)
+            .combined(with: .opacity)
+        let removal = AnyTransition.move(edge: .bottom)
+            .combined(with: .opacity)
+        return .asymmetric(insertion: insertion, removal: removal)
     }
 }

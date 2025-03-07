@@ -9,7 +9,7 @@ import SwiftUI
 import MapKit
 import CoreLocation
 
-// Enhanced Car View for list view with numbers
+// Enhanced Car View for list view with numbers - sleeker UI with smaller employee indicators
 struct EnhancedCarView: View {
     @EnvironmentObject var shiftStore: ShiftStore
     let car: Car
@@ -24,32 +24,42 @@ struct EnhancedCarView: View {
             showDetailView = true
         }) {
             HStack(spacing: 15) {
-                // Car number with status indicator
+                // Car number with status indicator - more subtle
                 ZStack {
                     Circle()
-                        .fill(car.isReturned ? ValetTheme.success : ValetTheme.primary)
-                        .frame(width: 50, height: 50)
-                        .shadow(color: (car.isReturned ? ValetTheme.success : ValetTheme.primary).opacity(0.3), radius: 5, x: 0, y: 3)
+                        .fill(car.isReturned ?
+                              ValetTheme.success.opacity(0.2) :
+                              ValetTheme.primary.opacity(0.2))
+                        .frame(width: 44, height: 44)
+                        .overlay(
+                            Circle()
+                                .stroke(car.isReturned ?
+                                        ValetTheme.success.opacity(0.6) :
+                                        ValetTheme.primary.opacity(0.6),
+                                        lineWidth: 2)
+                        )
                     
                     Text("\(carIndex)")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(car.isReturned ?
+                                         ValetTheme.success.opacity(0.9) :
+                                         ValetTheme.primary.opacity(0.9))
                     
-                    // Return status indicator
+                    // Return status indicator - smaller and more subtle
                     if car.isReturned {
                         Circle()
-                            .fill(Color.white)
-                            .frame(width: 18, height: 18)
+                            .fill(ValetTheme.success)
+                            .frame(width: 14, height: 14)
                             .overlay(
                                 Image(systemName: "checkmark")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(ValetTheme.success)
+                                    .font(.system(size: 8, weight: .bold))
+                                    .foregroundColor(.white)
                             )
-                            .offset(x: 18, y: 18)
+                            .offset(x: 16, y: 16)
                     }
                 }
                 
-                // Middle: Car details
+                // Middle: Car details - more emphasized with clear hierarchy
                 VStack(alignment: .leading, spacing: 4) {
                     Text("\(car.make) \(car.model)")
                         .font(.headline)
@@ -58,84 +68,86 @@ struct EnhancedCarView: View {
                     HStack(spacing: 5) {
                         Image(systemName: "number.square.fill")
                             .font(.caption2)
-                            .foregroundColor(ValetTheme.primary)
+                            .foregroundColor(ValetTheme.primary.opacity(0.7))
                         
                         Text(car.licensePlate)
                             .font(.subheadline)
-                            .foregroundColor(ValetTheme.primary)
+                            .foregroundColor(ValetTheme.primary.opacity(0.8))
                     }
                     
                     HStack(spacing: 5) {
                         Image(systemName: "location.fill")
                             .font(.caption2)
-                            .foregroundColor(ValetTheme.textSecondary)
+                            .foregroundColor(ValetTheme.textSecondary.opacity(0.7))
                         
                         Text(car.locationParked)
                             .font(.caption)
-                            .foregroundColor(ValetTheme.textSecondary)
+                            .foregroundColor(ValetTheme.textSecondary.opacity(0.7))
                             .lineLimit(1)
                     }
                 }
                 
                 Spacer()
                 
-                // Right side: Employee indicator & time / Map preview
+                // Right side: Employee indicator (smaller) & time / Map preview
                 VStack(alignment: .trailing, spacing: 4) {
+                    // Employee indicator - smaller and more subtle
                     if let employee = car.parkedBy {
-                        HStack(spacing: 5) {
+                        HStack(spacing: 4) {
                             Circle()
-                                .fill(employee.color)
-                                .frame(width: 10, height: 10)
+                                .fill(employee.color.opacity(0.7))
+                                .frame(width: 8, height: 8)
                             
                             Text(employee.name)
-                                .font(.caption)
-                                .foregroundColor(ValetTheme.textSecondary)
+                                .font(.caption2)
+                                .foregroundColor(ValetTheme.textSecondary.opacity(0.8))
                         }
                     }
                     
-                    // Time display
+                    // Time display - more emphasized, clearer hierarchy
                     if car.isReturned, let departureTime = car.departureTime {
                         HStack(spacing: 4) {
                             Image(systemName: "clock.fill")
                                 .font(.caption2)
-                                .foregroundColor(ValetTheme.success)
+                                .foregroundColor(ValetTheme.success.opacity(0.8))
                             
                             Text(departureTime.toTimeString())
                                 .font(.caption)
-                                .foregroundColor(ValetTheme.success)
+                                .foregroundColor(ValetTheme.success.opacity(0.8))
                         }
                     } else {
                         HStack(spacing: 4) {
                             Image(systemName: "clock.fill")
                                 .font(.caption2)
-                                .foregroundColor(ValetTheme.textSecondary)
+                                .foregroundColor(ValetTheme.textSecondary.opacity(0.7))
                             
                             Text(car.arrivalTime.toTimeString())
                                 .font(.caption)
-                                .foregroundColor(ValetTheme.textSecondary)
+                                .foregroundColor(ValetTheme.textSecondary.opacity(0.7))
                         }
                     }
                     
-                    // Mini map preview (if coordinates exist)
+                    // Mini map preview - more subtle design
                     if car.hasCoordinates {
                         ZStack {
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(ValetTheme.surfaceVariant)
-                                .frame(width: 45, height: 30)
+                                .fill(ValetTheme.surfaceVariant.opacity(0.8))
+                                .frame(width: 40, height: 26)
                             
                             Image(systemName: "mappin.circle.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(ValetTheme.primary)
+                                .font(.system(size: 14))
+                                .foregroundColor(ValetTheme.primary.opacity(0.7))
                         }
                     }
                 }
-                .frame(width: 80)
+                .frame(width: 70)
             }
-            .padding()
+            .padding(.vertical, 14)
+            .padding(.horizontal, 16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(ValetTheme.surfaceVariant)
-                    .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+                    .fill(ValetTheme.surfaceVariant.opacity(0.7))
+                    .shadow(color: Color.black.opacity(0.08), radius: 2, x: 0, y: 1)
             )
             .scaleEffect(isPressed ? 0.98 : 1)
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
@@ -184,7 +196,7 @@ struct EnhancedCarView: View {
     }
 }
 
-// Enhanced Mini Car View for grid view with numbers
+// Enhanced Mini Car View for grid view with numbers - sleeker and cleaner design
 struct EnhancedMiniCarView: View {
     @EnvironmentObject var shiftStore: ShiftStore
     let car: Car
@@ -197,42 +209,65 @@ struct EnhancedMiniCarView: View {
         Button(action: {
             showDetailView = true
         }) {
-            VStack(spacing: 10) {
-                // Status indicator with number
+            VStack(spacing: 8) {
+                // Status indicator with number - more subtle, less vibrant
                 ZStack {
                     Circle()
-                        .fill(car.isReturned ? ValetTheme.success : ValetTheme.primary)
-                        .frame(width: 54, height: 54)
-                        .shadow(color: (car.isReturned ? ValetTheme.success : ValetTheme.primary).opacity(0.3), radius: 5, x: 0, y: 3)
+                        .fill(car.isReturned ?
+                              ValetTheme.success.opacity(0.2) :
+                              ValetTheme.primary.opacity(0.2))
+                        .frame(width: 48, height: 48)
+                        .overlay(
+                            Circle()
+                                .stroke(car.isReturned ?
+                                        ValetTheme.success.opacity(0.5) :
+                                        ValetTheme.primary.opacity(0.5),
+                                        lineWidth: 1.5)
+                        )
                     
                     Text("#\(carIndex)")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(car.isReturned ?
+                                         ValetTheme.success.opacity(0.9) :
+                                         ValetTheme.primary.opacity(0.9))
                     
-                    // Employee indicator dot
+                    // Employee indicator dot - much smaller
                     if let employee = car.parkedBy {
-                        Circle()
-                            .fill(employee.color)
-                            .frame(width: 15, height: 15)
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.white, lineWidth: 2)
-                            )
-                            .offset(x: 20, y: -20)
+                        ZStack {
+                            Circle()
+                                .fill(employee.color.opacity(0.8))
+                                .frame(width: 10, height: 10)
+                            
+                            // Just initial if space allows
+                            if carIndex < 10 {
+                                Text(employee.name.prefix(1).uppercased())
+                                    .font(.system(size: 6, weight: .bold))
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .offset(x: 18, y: -18)
                     }
                     
-                    // Map pin if location is available
+                    // Map pin if location is available - smaller
                     if car.hasCoordinates {
                         Image(systemName: "mappin.circle.fill")
-                            .font(.system(size: 16))
-                            .foregroundColor(.white)
-                            .background(ValetTheme.primary)
-                            .clipShape(Circle())
-                            .offset(x: -20, y: -20)
+                            .font(.system(size: 10))
+                            .foregroundColor(ValetTheme.primary.opacity(0.8))
+                            .background(Circle().fill(ValetTheme.surfaceVariant))
+                            .offset(x: -18, y: -18)
+                    }
+                    
+                    // Return status indicator
+                    if car.isReturned {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 12))
+                            .foregroundColor(ValetTheme.success)
+                            .background(Circle().fill(ValetTheme.surfaceVariant))
+                            .offset(x: 0, y: 18)
                     }
                 }
                 
-                // License plate
+                // License plate - more emphasized for better readability
                 Text(car.licensePlate)
                     .font(.caption)
                     .fontWeight(.medium)
@@ -241,31 +276,31 @@ struct EnhancedMiniCarView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, 4)
                 
-                // Make/model (truncated)
+                // Make/model (truncated) - less emphasized
                 Text("\(car.make) \(car.model)")
                     .font(.caption2)
-                    .foregroundColor(ValetTheme.textSecondary)
+                    .foregroundColor(ValetTheme.textSecondary.opacity(0.8))
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, 4)
             }
-            .padding(8)
-            .frame(height: 120)
+            .padding(10)
+            .frame(height: 110)
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(ValetTheme.surfaceVariant)
-                    .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(ValetTheme.surfaceVariant.opacity(0.7))
+                    .shadow(color: Color.black.opacity(0.08), radius: 2, x: 0, y: 1)
             )
             .overlay(
                 Text("View")
-                    .font(.system(size: 9))
+                    .font(.system(size: 8))
                     .padding(.vertical, 2)
-                    .padding(.horizontal, 6)
-                    .background(ValetTheme.primary.opacity(0.3))
-                    .cornerRadius(4)
-                    .foregroundColor(ValetTheme.primary)
-                    .offset(y: 45)
+                    .padding(.horizontal, 5)
+                    .background(ValetTheme.primary.opacity(0.2))
+                    .cornerRadius(3)
+                    .foregroundColor(ValetTheme.primary.opacity(0.8))
+                    .offset(y: 40)
                     .opacity(isPressed ? 1.0 : 0.0)
             )
             .scaleEffect(isPressed ? 0.95 : 1)
@@ -309,7 +344,7 @@ struct EnhancedMiniCarView: View {
     }
 }
 
-// Enhanced Add Car Button for grid view (unchanged)
+// Enhanced Add Car Button for grid view (sleeker, less vibrant)
 struct EnhancedAddCarButton: View {
     let action: () -> Void
     @State private var isPressed = false
@@ -319,30 +354,40 @@ struct EnhancedAddCarButton: View {
             VStack {
                 ZStack {
                     Circle()
-                        .fill(ValetTheme.primaryGradient)
-                        .frame(width: 54, height: 54)
-                        .shadow(color: ValetTheme.primary.opacity(0.3), radius: 5, x: 0, y: 3)
+                        .fill(LinearGradient(
+                            gradient: Gradient(colors: [
+                                ValetTheme.primary.opacity(0.7),
+                                ValetTheme.primary.opacity(0.5)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ))
+                        .frame(width: 48, height: 48)
+                        .overlay(
+                            Circle()
+                                .stroke(ValetTheme.primary.opacity(0.2), lineWidth: 1)
+                        )
                     
                     Image(systemName: "plus")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundColor(.white.opacity(0.9))
                 }
                 
                 Text("Add Car")
                     .font(.caption)
                     .fontWeight(.medium)
-                    .foregroundColor(ValetTheme.primary)
+                    .foregroundColor(ValetTheme.primary.opacity(0.9))
                 
                 Text("New vehicle")
                     .font(.caption2)
-                    .foregroundColor(ValetTheme.textSecondary)
+                    .foregroundColor(ValetTheme.textSecondary.opacity(0.7))
             }
-            .padding(8)
-            .frame(height: 120)
+            .padding(10)
+            .frame(height: 110)
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(ValetTheme.surfaceVariant.opacity(0.5))
-                    .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(ValetTheme.surfaceVariant.opacity(0.4))
+                    .shadow(color: Color.black.opacity(0.05), radius: 1, x: 0, y: 1)
             )
             .scaleEffect(isPressed ? 0.95 : 1)
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
@@ -363,7 +408,6 @@ struct EnhancedAddCarButton: View {
         )
     }
 }
-
 // MARK: - Detailed Car View
 
 // Detailed Car View shown when tapping a car
@@ -806,3 +850,44 @@ extension Date {
         return formatter.string(from: self)
     }
 }
+
+
+#if DEBUG
+struct EnhancedCarViews_Previews: PreviewProvider {
+    static var previews: some View {
+        // Create sample data
+        let shiftStore = ShiftStore(withDemoData: true)
+        let shift = shiftStore.shifts.first!
+        let car = shift.cars.first!
+        
+        return Group {
+            // List view car component
+            ScrollView {
+                VStack(spacing: 16) {
+                    Text("Enhanced Car View")
+                        .font(.headline)
+                        .foregroundColor(ValetTheme.primary)
+                    
+                    EnhancedCarView(car: car, shift: shift, carIndex: 1)
+                    
+                    Divider().background(ValetTheme.primary.opacity(0.5))
+                    
+                    Text("Enhanced Mini Car View")
+                        .font(.headline)
+                        .foregroundColor(ValetTheme.primary)
+                    
+                    // Grid of mini cars
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                        EnhancedMiniCarView(car: car, shift: shift, carIndex: 1)
+                        EnhancedAddCarButton(action: {})
+                    }
+                }
+                .padding()
+            }
+            .background(ValetTheme.background)
+            .environmentObject(shiftStore)
+            .preferredColorScheme(.dark)
+        }
+    }
+}
+#endif

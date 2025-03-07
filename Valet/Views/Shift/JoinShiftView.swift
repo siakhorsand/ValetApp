@@ -10,6 +10,7 @@ import AVFoundation
 
 struct JoinShiftView: View {
     @EnvironmentObject var shiftStore: ShiftStore
+    @EnvironmentObject var userManager: UserManager
     @Environment(\.dismiss) var dismiss
     
     @State private var shiftCode: String = ""
@@ -160,35 +161,49 @@ struct JoinShiftView: View {
                 }
                 .padding(.horizontal, 20)
                 
-                // Employee Name Input
+                // Your Name section (display only - now auto-populated)
                 VStack(alignment: .leading, spacing: 10) {
                     Text("YOUR NAME")
                         .font(.caption)
                         .fontWeight(.semibold)
                         .foregroundColor(ValetTheme.textSecondary)
                     
-                    TextField("", text: $employeeName)
-                        .placeholder(when: employeeName.isEmpty) {
-                            Text("Enter your name")
-                                .foregroundColor(ValetTheme.textSecondary.opacity(0.7))
-                        }
-                        .padding()
-                        .background(ValetTheme.surfaceVariant)
-                        .cornerRadius(12)
-                        .foregroundColor(ValetTheme.onSurface)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(nameFieldFocused ? ValetTheme.primary : ValetTheme.primary.opacity(0.5), lineWidth: 2)
-                        )
-                        .textInputAutocapitalization(.words)
-                        .disableAutocorrection(true)
-                        .focused($nameFieldFocused)
-                        .submitLabel(.join)
-                        .onSubmit {
-                            if isFormValid {
-                                joinShift()
+                    // Display the current user's name with a badge that it's auto-filled
+                    HStack {
+                        Text(userManager.currentUser?.name ?? "")
+                            .padding()
+                            .foregroundColor(ValetTheme.onSurface)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(ValetTheme.surfaceVariant)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(ValetTheme.primary.opacity(0.5), lineWidth: 2)
+                            )
+                        
+                        // Profile badge
+                        HStack(spacing: 4) {
+                            ZStack {
+                                Circle()
+                                    .fill(ValetTheme.primary)
+                                    .frame(width: 24, height: 24)
+                                
+                                Text(userManager.currentUser?.name.prefix(1).uppercased() ?? "U")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(.white)
                             }
+                            
+                            Text("Profile")
+                                .font(.caption)
+                                .foregroundColor(ValetTheme.primary)
                         }
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(ValetTheme.primary.opacity(0.5), lineWidth: 1)
+                        )
+                    }
                 }
                 .padding(.horizontal, 20)
                 
@@ -303,6 +318,11 @@ struct JoinShiftView: View {
             hideKeyboard()
         }
         .onAppear {
+            // Auto-populate employee name from user profile
+            if let user = userManager.currentUser {
+                employeeName = user.name
+            }
+            
             // Set focus after a brief delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 codeFieldFocused = true
@@ -313,7 +333,7 @@ struct JoinShiftView: View {
     
     // Form validation
     private var isFormValid: Bool {
-        shiftCode.count == 6 && !employeeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        shiftCode.count == 6 && userManager.currentUser != nil
     }
     
     // Check camera permission
@@ -332,6 +352,8 @@ struct JoinShiftView: View {
     
     // Join shift logic
     private func joinShift() {
+        guard let user = userManager.currentUser else { return }
+        
         hideKeyboard()
         isLoading = true
         errorMessage = nil
@@ -343,8 +365,8 @@ struct JoinShiftView: View {
             switch result {
             case .success(let shift):
                 if let shift = shift {
-                    // Add the employee to the shift
-                    shiftStore.addEmployeeToShift(name: employeeName, shift: shift)
+                    // Add the employee to the shift using the current user's name
+                    shiftStore.addEmployeeToShift(name: user.name, shift: shift)
                     
                     // Set success message and prepare for navigation
                     successMessage = "Successfully joined shift!"
@@ -379,3 +401,13 @@ struct JoinShiftView: View {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
+#if DEBUG
+struct JoinShiftView_Previews: PreviewProvider {
+    static var previews: some View {
+        JoinShiftView()
+            .environmentObject(ShiftStore(withDemoData: true))
+            .environmentObject(UserManager.shared)
+            .preferredColorScheme(.dark)
+    }
+}
+#endif

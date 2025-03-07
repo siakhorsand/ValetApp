@@ -9,8 +9,11 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var shiftStore: ShiftStore
+    @EnvironmentObject var userManager: UserManager
+    
     @State private var showNewShiftSheet = false
     @State private var showJoinShiftSheet = false
+    @State private var showProfileSheet = false
     @State private var selectedShiftId: UUID?
     @State private var animateGradient = false
     @State private var animateButtons = false
@@ -73,6 +76,42 @@ struct ContentView: View {
 
                 // Main content
                 VStack(spacing: 0) {
+                    // Profile button in top right
+                    HStack {
+                        Spacer()
+                        
+                        Button(action: {
+                            showProfileSheet = true
+                        }) {
+                            HStack(spacing: 8) {
+                                // Profile text
+                                if let user = userManager.currentUser {
+                                    Text(user.name)
+                                        .font(.subheadline)
+                                        .foregroundColor(ValetTheme.onBackground)
+                                }
+                                
+                                // Avatar circle
+                                ZStack {
+                                    Circle()
+                                        .fill(ValetTheme.primary)
+                                        .frame(width: 36, height: 36)
+                                    
+                                    Text(userManager.currentUser?.name.prefix(1).uppercased() ?? "U")
+                                        .font(.system(size: 18, weight: .bold))
+                                        .foregroundColor(.white)
+                                }
+                            }
+                            .padding(8)
+                            .background(
+                                Capsule()
+                                    .fill(ValetTheme.surfaceVariant.opacity(0.7))
+                            )
+                        }
+                        .padding(.top, 20)
+                        .padding(.trailing, 20)
+                    }
+                    
                     // App header section
                     VStack(spacing: 8) {
                         // Logo and title
@@ -92,7 +131,7 @@ struct ContentView: View {
                         }
                         .offset(y: startAnimation ? 0 : -50)
                         .opacity(startAnimation ? 1 : 0)
-                        .padding(.top, 40)
+                        .padding(.top, 20)
                         
                         Text("VALET MANAGER")
                             .font(.system(size: 32, weight: .bold, design: .rounded))
@@ -257,6 +296,16 @@ struct ContentView: View {
                 .presentationDragIndicator(.visible)
                 .background(ValetTheme.background)
             }
+            
+            // Sheet for profile
+            .sheet(isPresented: $showProfileSheet) {
+                ProfileView()
+                .preferredColorScheme(.dark)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+                .background(ValetTheme.background)
+            }
+            
             // Hidden nav link to go directly to ShiftDetailView if needed
             .background(
                 NavigationLink(
@@ -287,245 +336,4 @@ struct ContentView: View {
         formatter.timeStyle = .short
         return formatter
     }()
-}
-
-// MARK: - Supporting Views
-
-// Enhanced main button with subtitle and flat design
-struct EnhancedMainButton: View {
-    let title: String
-    let subtitle: String
-    let icon: String
-    let gradient: LinearGradient
-    let delay: Double
-    let action: () -> Void
-    @State private var isPressed = false
-    @State private var appear = false
-    
-    var body: some View {
-        Button(action: {
-            let impactMed = UIImpactFeedbackGenerator(style: .medium)
-            impactMed.impactOccurred()
-            action()
-        }) {
-            HStack(spacing: 15) {
-                // Icon with simplified design
-                ZStack {
-                    Circle()
-                        .fill(ValetTheme.surfaceVariant)
-                        .frame(width: 45, height: 45)
-                    
-                    Image(systemName: icon)
-                        .font(.system(size: 22))
-                        .foregroundColor(ValetTheme.primary)
-                }
-                .scaleEffect(isPressed ? 0.95 : 1)
-                
-                // Text content
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(title)
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(ValetTheme.onSurface)
-                    
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundColor(ValetTheme.textSecondary)
-                }
-                
-                Spacer()
-                
-                // Chevron with primary color
-                Image(systemName: "chevron.right")
-                    .foregroundColor(ValetTheme.primary)
-                    .font(.subheadline)
-                    .offset(x: isPressed ? -5 : 0)
-                    .animation(.easeOut(duration: 0.2), value: isPressed)
-            }
-            .padding(.vertical, 16)
-            .padding(.horizontal, 20)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(ValetTheme.surfaceVariant)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(ValetTheme.primary.opacity(0.6), lineWidth: 2)
-                    )
-            )
-            .scaleEffect(isPressed ? 0.98 : 1)
-            .animation(.spring(response: 0.4, dampingFraction: 0.6), value: isPressed)
-            .opacity(appear ? 1 : 0)
-            .blur(radius: appear ? 0 : 10)
-            .onAppear {
-                withAnimation(.easeOut(duration: 0.7).delay(delay)) {
-                    appear = true
-                }
-            }
-        }
-        .buttonStyle(PlainButtonStyle())
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged({ _ in
-                    withAnimation(.easeInOut(duration: 0.1)) {
-                        isPressed = true
-                    }
-                })
-                .onEnded({ _ in
-                    withAnimation(.easeInOut(duration: 0.1)) {
-                        isPressed = false
-                    }
-                })
-        )
-    }
-}
-
-// Button view for the secondary buttons
-struct EnhancedMainButtonView: View {
-    let title: String
-    let subtitle: String
-    let icon: String
-    let color: Color
-    let delay: Double
-    @State private var isPressed = false
-    @State private var appear = false
-    
-    var body: some View {
-        HStack(spacing: 15) {
-            // Icon
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.2))
-                    .frame(width: 45, height: 45)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 22))
-                    .foregroundColor(color)
-            }
-            .scaleEffect(isPressed ? 0.95 : 1)
-            
-            // Text content
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(ValetTheme.onSurface)
-                
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundColor(ValetTheme.textSecondary)
-            }
-            
-            Spacer()
-            
-            // Chevron
-            Image(systemName: "chevron.right")
-                .foregroundColor(ValetTheme.textSecondary)
-                .font(.subheadline)
-                .offset(x: isPressed ? -5 : 0)
-                .animation(.easeOut(duration: 0.2), value: isPressed)
-        }
-        .padding(.vertical, 16)
-        .padding(.horizontal, 20)
-        .background(
-            ZStack {
-                // Button background
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(ValetTheme.surfaceVariant)
-                    .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
-                
-                // Top highlight
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                .white.opacity(0.1),
-                                .clear
-                            ]),
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .mask(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [.black, .clear]),
-                                    startPoint: .top,
-                                    endPoint: .center
-                                )
-                            )
-                    )
-            }
-        )
-        .scaleEffect(isPressed ? 0.98 : 1)
-        .offset(y: isPressed ? 1 : -1)
-        .animation(.spring(response: 0.4, dampingFraction: 0.6), value: isPressed)
-        .opacity(appear ? 1 : 0)
-        .blur(radius: appear ? 0 : 10)
-        .onAppear {
-            withAnimation(.easeOut(duration: 0.7).delay(delay)) {
-                appear = true
-            }
-        }
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged({ _ in
-                    withAnimation(.easeInOut(duration: 0.1)) {
-                        isPressed = true
-                    }
-                })
-                .onEnded({ _ in
-                    withAnimation(.easeInOut(duration: 0.1)) {
-                        isPressed = false
-                    }
-                })
-        )
-    }
-}
-
-// Floating particle for background effect
-struct FloatingParticle: View {
-    let delay: Double
-    let size: CGFloat
-    
-    @State private var isAnimating = false
-    
-    var body: some View {
-        Circle()
-            .fill(ValetTheme.primary.opacity(0.3))
-            .frame(width: size, height: size)
-            .blur(radius: 1)
-            .offset(
-                x: isAnimating ? CGFloat.random(in: -100...100) : CGFloat.random(in: -100...100),
-                y: isAnimating ? CGFloat.random(in: -300...300) : CGFloat.random(in: -300...300)
-            )
-            .opacity(isAnimating ? Double.random(in: 0.2...0.6) : 0)
-            .onAppear {
-                withAnimation(
-                    Animation.easeInOut(duration: Double.random(in: 15...25))
-                        .repeatForever(autoreverses: true)
-                        .delay(delay * 2)
-                ) {
-                    isAnimating = true
-                }
-            }
-    }
-}
-
-// Pulsing animation modifier
-struct PulsingAnimation: ViewModifier {
-    @State private var pulsate = false
-    
-    func body(content: Content) -> some View {
-        content
-            .scaleEffect(pulsate ? 1.2 : 0.8)
-            .opacity(pulsate ? 1 : 0.6)
-            .animation(
-                Animation.easeInOut(duration: 0.8)
-                    .repeatForever(autoreverses: true)
-            )
-            .onAppear {
-                pulsate = true
-            }
-    }
 }
