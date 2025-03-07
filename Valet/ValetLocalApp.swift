@@ -5,6 +5,13 @@
 //  Created by Sia Khorsand on 1/14/25.
 //
 
+//
+//  ValetLocalApp.swift
+//  Valet
+//
+//  Created by Sia Khorsand on 1/14/25.
+
+
 import SwiftUI
 
 @main
@@ -13,7 +20,7 @@ struct ValetLocalApp: App {
     @StateObject var userManager = UserManager.shared
     
     init() {
-        // Configure the global appearance for dark mode
+        // Configure the global appearance for app
         setupAppearance()
     }
 
@@ -31,20 +38,24 @@ struct ValetLocalApp: App {
                         .environmentObject(userManager)
                 }
             }
-            .preferredColorScheme(.dark) // Force dark mode throughout the app
+            // Now using system color scheme instead of forcing dark mode
         }
     }
     
     private func setupAppearance() {
-        // Set navigation bar appearance for dark mode
+        // Get the current color scheme from the app
+        let isDarkMode = UITraitCollection.current.userInterfaceStyle == .dark
+        let colors = ValetTheme.dynamicColors(for: isDarkMode ? .dark : .light)
+        
+        // Set navigation bar appearance that adapts to color scheme
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(ValetTheme.surfaceVariant)
+        appearance.backgroundColor = UIColor(isDarkMode ? ValetTheme.surfaceVariant : colors.surfaceVariant)
         appearance.titleTextAttributes = [
-            .foregroundColor: UIColor(ValetTheme.primary)
+            .foregroundColor: UIColor(colors.primary)
         ]
         appearance.largeTitleTextAttributes = [
-            .foregroundColor: UIColor(ValetTheme.primary)
+            .foregroundColor: UIColor(colors.primary)
         ]
         
         // Set appearance for all navigation bars
@@ -55,7 +66,7 @@ struct ValetLocalApp: App {
         // Set tab bar appearance
         let tabBarAppearance = UITabBarAppearance()
         tabBarAppearance.configureWithOpaqueBackground()
-        tabBarAppearance.backgroundColor = UIColor(ValetTheme.surfaceVariant)
+        tabBarAppearance.backgroundColor = UIColor(isDarkMode ? ValetTheme.surfaceVariant : colors.surfaceVariant)
         
         UITabBar.appearance().standardAppearance = tabBarAppearance
         if #available(iOS 15.0, *) {
