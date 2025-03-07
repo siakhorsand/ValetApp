@@ -23,7 +23,7 @@ struct ValetLocalApp: App {
         // Configure the global appearance for app
         setupAppearance()
     }
-
+    
     var body: some Scene {
         WindowGroup {
             ZStack {
@@ -43,14 +43,28 @@ struct ValetLocalApp: App {
     }
     
     private func setupAppearance() {
-        // Get the current color scheme from the app
-        let isDarkMode = UITraitCollection.current.userInterfaceStyle == .dark
-        let colors = ValetTheme.dynamicColors(for: isDarkMode ? .dark : .light)
+        // Create two separate appearances for light and dark mode
+        setupAppearanceForMode(.light)
+        setupAppearanceForMode(.dark)
+        
+        // Register for theme change notifications to update appearances when user switches modes
+        NotificationCenter.default.addObserver(
+                   forName: UIApplication.significantTimeChangeNotification,
+                   object: nil,
+                   queue: .main
+               ) { _ in
+                   self.setupAppearanceForMode(.dark)
+                   self.setupAppearanceForMode(.light)
+               }
+    }
+    
+    private func setupAppearanceForMode(_ colorScheme: ColorScheme) {
+        let colors = ValetTheme.dynamicColors(for: colorScheme)
         
         // Set navigation bar appearance that adapts to color scheme
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(isDarkMode ? ValetTheme.surfaceVariant : colors.surfaceVariant)
+        appearance.backgroundColor = UIColor(colors.surfaceVariant)
         appearance.titleTextAttributes = [
             .foregroundColor: UIColor(colors.primary)
         ]
@@ -58,19 +72,30 @@ struct ValetLocalApp: App {
             .foregroundColor: UIColor(colors.primary)
         ]
         
-        // Set appearance for all navigation bars
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().compactAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        
         // Set tab bar appearance
         let tabBarAppearance = UITabBarAppearance()
         tabBarAppearance.configureWithOpaqueBackground()
-        tabBarAppearance.backgroundColor = UIColor(isDarkMode ? ValetTheme.surfaceVariant : colors.surfaceVariant)
+        tabBarAppearance.backgroundColor = UIColor(colors.surfaceVariant)
         
-        UITabBar.appearance().standardAppearance = tabBarAppearance
-        if #available(iOS 15.0, *) {
-            UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+        // Apply appearances for specific modes
+        if colorScheme == .dark {
+            UINavigationBar.appearance(for: .current).standardAppearance = appearance
+            UINavigationBar.appearance(for: .current).scrollEdgeAppearance = appearance
+            UINavigationBar.appearance(for: .current).compactAppearance = appearance
+            
+            UITabBar.appearance(for: .current).standardAppearance = tabBarAppearance
+            if #available(iOS 15.0, *) {
+                UITabBar.appearance(for: .current).scrollEdgeAppearance = tabBarAppearance
+            }
+        } else {
+            UINavigationBar.appearance(for: .current).standardAppearance = appearance
+            UINavigationBar.appearance(for: .current).scrollEdgeAppearance = appearance
+            UINavigationBar.appearance(for: .current).compactAppearance = appearance
+            
+            UITabBar.appearance(for: .current).standardAppearance = tabBarAppearance
+            if #available(iOS 15.0, *) {
+                UITabBar.appearance(for: .current).scrollEdgeAppearance = tabBarAppearance
+            }
         }
     }
 }

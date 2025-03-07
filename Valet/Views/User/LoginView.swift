@@ -9,8 +9,9 @@ import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject var userManager: UserManager
+    @Environment(\.colorScheme) private var colorScheme
     
-    @State private var email = ""
+    @State private var phoneNumber = ""
     @State private var name = ""
     @State private var isSignup = false
     @State private var showAlert = false
@@ -19,27 +20,18 @@ struct LoginView: View {
     
     var body: some View {
         ZStack {
-            // Background
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    ValetTheme.background,
-                    ValetTheme.primaryVariant.opacity(0.2),
-                    ValetTheme.background
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            // Dynamic background that adapts to color scheme
+            ValetTheme.dynamicBackgroundGradient(colorScheme: colorScheme)
             
             // Animated particles
             ZStack {
                 // Accent gradient overlay
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        ValetTheme.background,
-                        ValetTheme.background.opacity(0.9),
-                        ValetTheme.primary.opacity(0.1),
-                        ValetTheme.background.opacity(0.9)
+                        ValetTheme.dynamicColors(for: colorScheme).background,
+                        ValetTheme.dynamicColors(for: colorScheme).background.opacity(0.9),
+                        ValetTheme.dynamicColors(for: colorScheme).primary.opacity(0.1),
+                        ValetTheme.dynamicColors(for: colorScheme).background.opacity(0.9)
                     ]),
                     startPoint: animate ? .bottomLeading : .topTrailing,
                     endPoint: animate ? .topTrailing : .bottomLeading
@@ -66,22 +58,22 @@ struct LoginView: View {
                     ZStack {
                         // Glow effect
                         Circle()
-                            .fill(ValetTheme.primary)
+                            .fill(ValetTheme.dynamicColors(for: colorScheme).primary)
                             .frame(width: 90, height: 90)
                             .blur(radius: 20)
                             .opacity(0.3)
                         
                         Image(systemName: "car.fill")
                             .font(.system(size: 60))
-                            .foregroundColor(ValetTheme.primary)
-                            .shadow(color: ValetTheme.primary.opacity(0.8), radius: 15, x: 0, y: 4)
+                            .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).primary)
+                            .shadow(color: ValetTheme.dynamicColors(for: colorScheme).primary.opacity(0.8), radius: 15, x: 0, y: 4)
                     }
                     
                     Text("VALET MANAGER")
                         .font(.system(size: 32, weight: .bold, design: .rounded))
-                        .foregroundColor(ValetTheme.onBackground)
+                        .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).onBackground)
                         .tracking(2)
-                        .shadow(color: ValetTheme.primary.opacity(0.5), radius: 10, x: 0, y: 4)
+                        .shadow(color: ValetTheme.dynamicColors(for: colorScheme).primary.opacity(0.5), radius: 10, x: 0, y: 4)
                 }
                 .padding(.top, 50)
                 
@@ -90,80 +82,79 @@ struct LoginView: View {
                     Text(isSignup ? "Create Account" : "Login")
                         .font(.title2)
                         .fontWeight(.bold)
-                        .foregroundColor(ValetTheme.onSurface)
+                        .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).onSurface)
                     
                     // Name field (always shown)
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Image(systemName: "person.fill")
-                                .foregroundColor(ValetTheme.primary)
+                                .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).primary)
                             Text("NAME")
                                 .font(.caption)
                                 .fontWeight(.semibold)
-                                .foregroundColor(ValetTheme.primary)
+                                .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).primary)
                         }
                         
                         TextField("", text: $name)
                             .placeholder(when: name.isEmpty) {
                                 Text("Enter your name")
-                                    .foregroundColor(ValetTheme.textSecondary.opacity(0.7))
+                                    .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).textSecondary.opacity(0.7))
                             }
                             .padding()
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(ValetTheme.surfaceVariant)
+                                    .fill(ValetTheme.dynamicColors(for: colorScheme).surfaceVariant)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(ValetTheme.primary.opacity(0.6), lineWidth: 2)
+                                    .stroke(ValetTheme.dynamicColors(for: colorScheme).primary.opacity(0.6), lineWidth: 2)
                             )
-                            .foregroundColor(ValetTheme.onSurface)
+                            .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).onSurface)
                             .autocapitalization(.words)
                     }
                     
-                    // Email field
+                    // Phone Number field
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Image(systemName: "envelope.fill")
-                                .foregroundColor(ValetTheme.primary)
-                            Text("EMAIL")
+                            Image(systemName: "phone.fill")
+                                .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).primary)
+                            Text("PHONE NUMBER")
                                 .font(.caption)
                                 .fontWeight(.semibold)
-                                .foregroundColor(ValetTheme.primary)
+                                .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).primary)
                         }
                         
-                        TextField("", text: $email)
-                            .placeholder(when: email.isEmpty) {
-                                Text("Enter your email")
-                                    .foregroundColor(ValetTheme.textSecondary.opacity(0.7))
+                        TextField("", text: $phoneNumber)
+                            .placeholder(when: phoneNumber.isEmpty) {
+                                Text("Enter your phone number")
+                                    .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).textSecondary.opacity(0.7))
                             }
                             .padding()
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(ValetTheme.surfaceVariant)
+                                    .fill(ValetTheme.dynamicColors(for: colorScheme).surfaceVariant)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(ValetTheme.primary.opacity(0.6), lineWidth: 2)
+                                    .stroke(ValetTheme.dynamicColors(for: colorScheme).primary.opacity(0.6), lineWidth: 2)
                             )
-                            .foregroundColor(ValetTheme.onSurface)
-                            .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
-                            .textContentType(.emailAddress)
+                            .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).onSurface)
+                            .keyboardType(.phonePad)
+                            .textContentType(.telephoneNumber)
                     }
                     
                     // Login/Signup button
                     Button(action: {
                         // Validate and process login/signup
                         if name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-                           email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                           phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                             alertMessage = "Please fill in all fields"
                             showAlert = true
                             return
                         }
                         
                         // For demo, just log in the user with the provided name
-                        userManager.login(email: email, name: name)
+                        userManager.login(phoneNumber: phoneNumber, name: name)
                         
                         // Provide haptic feedback for success
                         let generator = UINotificationFeedbackGenerator()
@@ -178,9 +169,9 @@ struct LoginView: View {
                         .foregroundColor(.white)
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(ValetTheme.primaryGradient)
+                        .background(ValetTheme.dynamicPrimaryGradient(colorScheme: colorScheme))
                         .cornerRadius(12)
-                        .shadow(color: ValetTheme.primary.opacity(0.3), radius: 5, x: 0, y: 3)
+                        .shadow(color: ValetTheme.dynamicColors(for: colorScheme).primary.opacity(0.3), radius: 5, x: 0, y: 3)
                     }
                     
                     // Toggle between login and signup
@@ -191,7 +182,7 @@ struct LoginView: View {
                     }) {
                         Text(isSignup ? "Already have an account? Login" : "Don't have an account? Sign up")
                             .font(.subheadline)
-                            .foregroundColor(ValetTheme.primary)
+                            .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).primary)
                     }
                     .padding(.top, 10)
                 }
@@ -202,7 +193,7 @@ struct LoginView: View {
                 // App version
                 Text("Version 1.0")
                     .font(.caption)
-                    .foregroundColor(ValetTheme.textSecondary)
+                    .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).textSecondary)
                     .padding(.bottom, 20)
             }
         }
@@ -213,7 +204,6 @@ struct LoginView: View {
                 dismissButton: .default(Text("OK"))
             )
         }
-        .preferredColorScheme(.dark)
         .onTapGesture {
             hideKeyboard()
         }
@@ -224,7 +214,6 @@ struct LoginView: View {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
-
 #if DEBUG
 struct LoginView_Previews: PreviewProvider {
     static var previews: some View {

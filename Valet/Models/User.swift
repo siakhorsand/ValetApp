@@ -11,12 +11,12 @@ import Foundation
 struct User: Codable, Identifiable {
     let id: UUID
     var name: String
-    var email: String
+    var phoneNumber: String
     
-    init(id: UUID = UUID(), name: String, email: String) {
+    init(id: UUID = UUID(), name: String, phoneNumber: String) {
         self.id = id
         self.name = name
-        self.email = email
+        self.phoneNumber = phoneNumber
     }
 }
 
@@ -53,23 +53,23 @@ class UserManager: ObservableObject {
     }
     
     // Login with email and password
-    func login(email: String, name: String) {
-        // In a real app, you would validate credentials against a backend
-        // For this demo, we'll create a user and log them in directly
-        let user = User(name: name, email: email)
-        self.currentUser = user
-        self.isLoggedIn = true
-        saveUser()
-    }
-    
-    // Update user information
-    func updateUserInfo(name: String, email: String) {
-        guard var user = currentUser else { return }
-        user.name = name
-        user.email = email
-        self.currentUser = user
-        saveUser()
-    }
+    func login(phoneNumber: String, name: String) {
+           // In a real app, you would validate credentials against a backend
+           // For this demo, we'll create a user and log them in directly
+           let user = User(name: name, phoneNumber: phoneNumber)
+           self.currentUser = user
+           self.isLoggedIn = true
+           saveUser()
+       }
+       
+       // Update user information
+       func updateUserInfo(name: String, phoneNumber: String) {
+           guard var user = currentUser else { return }
+           user.name = name
+           user.phoneNumber = phoneNumber
+           self.currentUser = user
+           saveUser()
+       }
     
     // Logout user
     func logout() {

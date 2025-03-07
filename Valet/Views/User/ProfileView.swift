@@ -11,16 +11,17 @@ import SwiftUI
 struct ProfileView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var userManager: UserManager
+    @Environment(\.colorScheme) private var colorScheme
     
     @State private var name: String = ""
-    @State private var email: String = ""
+    @State private var phoneNumber: String = ""
     @State private var showLogoutConfirmation = false
     @State private var showSavedAlert = false
     
     var body: some View {
         ZStack {
-            // Background
-            ValetTheme.background
+            // Background that adapts to color scheme
+            ValetTheme.dynamicColors(for: colorScheme).background
                 .ignoresSafeArea()
             
             VStack(spacing: 24) {
@@ -28,16 +29,16 @@ struct ProfileView: View {
                 HStack {
                     Rectangle()
                         .frame(height: 2)
-                        .foregroundColor(ValetTheme.primary.opacity(0.5))
+                        .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).primary.opacity(0.5))
                     
                     Text("PROFILE")
                         .font(.headline)
-                        .foregroundColor(ValetTheme.primary)
+                        .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).primary)
                         .padding(.horizontal, 10)
                     
                     Rectangle()
                         .frame(height: 2)
-                        .foregroundColor(ValetTheme.primary.opacity(0.5))
+                        .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).primary.opacity(0.5))
                 }
                 .padding(.top, 20)
                 .padding(.horizontal)
@@ -45,7 +46,7 @@ struct ProfileView: View {
                 // Profile avatar
                 ZStack {
                     Circle()
-                        .fill(ValetTheme.primary)
+                        .fill(ValetTheme.dynamicColors(for: colorScheme).primary)
                         .frame(width: 90, height: 90)
                     
                     Text(userManager.currentUser?.name.prefix(1).uppercased() ?? "U")
@@ -60,60 +61,59 @@ struct ProfileView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Image(systemName: "person.fill")
-                                .foregroundColor(ValetTheme.primary)
+                                .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).primary)
                             Text("NAME")
                                 .font(.caption)
                                 .fontWeight(.semibold)
-                                .foregroundColor(ValetTheme.primary)
+                                .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).primary)
                         }
                         
                         TextField("", text: $name)
                             .placeholder(when: name.isEmpty) {
                                 Text("Enter your name")
-                                    .foregroundColor(ValetTheme.textSecondary.opacity(0.7))
+                                    .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).textSecondary.opacity(0.7))
                             }
                             .padding()
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(ValetTheme.surfaceVariant)
+                                    .fill(ValetTheme.dynamicColors(for: colorScheme).surfaceVariant)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(ValetTheme.primary.opacity(0.6), lineWidth: 2)
+                                    .stroke(ValetTheme.dynamicColors(for: colorScheme).primary.opacity(0.6), lineWidth: 2)
                             )
-                            .foregroundColor(ValetTheme.onSurface)
+                            .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).onSurface)
                             .autocapitalization(.words)
                     }
                     
-                    // Email field
+                    // Phone Number field
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Image(systemName: "envelope.fill")
-                                .foregroundColor(ValetTheme.primary)
-                            Text("EMAIL")
+                            Image(systemName: "phone.fill")
+                                .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).primary)
+                            Text("PHONE NUMBER")
                                 .font(.caption)
                                 .fontWeight(.semibold)
-                                .foregroundColor(ValetTheme.primary)
+                                .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).primary)
                         }
                         
-                        TextField("", text: $email)
-                            .placeholder(when: email.isEmpty) {
-                                Text("Enter your email")
-                                    .foregroundColor(ValetTheme.textSecondary.opacity(0.7))
+                        TextField("", text: $phoneNumber)
+                            .placeholder(when: phoneNumber.isEmpty) {
+                                Text("Enter your phone number")
+                                    .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).textSecondary.opacity(0.7))
                             }
                             .padding()
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(ValetTheme.surfaceVariant)
+                                    .fill(ValetTheme.dynamicColors(for: colorScheme).surfaceVariant)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(ValetTheme.primary.opacity(0.6), lineWidth: 2)
+                                    .stroke(ValetTheme.dynamicColors(for: colorScheme).primary.opacity(0.6), lineWidth: 2)
                             )
-                            .foregroundColor(ValetTheme.onSurface)
-                            .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
-                            .textContentType(.emailAddress)
+                            .foregroundColor(ValetTheme.dynamicColors(for: colorScheme).onSurface)
+                            .keyboardType(.phonePad)
+                            .textContentType(.telephoneNumber)
                     }
                     
                     // Save button
@@ -127,12 +127,12 @@ struct ProfileView: View {
                         .foregroundColor(.white)
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(ValetTheme.primaryGradient)
+                        .background(ValetTheme.dynamicPrimaryGradient(colorScheme: colorScheme))
                         .cornerRadius(12)
-                        .shadow(color: ValetTheme.primary.opacity(0.3), radius: 5, x: 0, y: 3)
+                        .shadow(color: ValetTheme.dynamicColors(for: colorScheme).primary.opacity(0.3), radius: 5, x: 0, y: 3)
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-                              email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                              phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
                 .padding(.horizontal)
                 
@@ -151,7 +151,7 @@ struct ProfileView: View {
                     .foregroundColor(.white)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(ValetTheme.error.opacity(0.8))
+                    .background(ValetTheme.dynamicColors(for: colorScheme).error.opacity(0.8))
                     .cornerRadius(12)
                 }
                 .padding(.horizontal)
@@ -175,10 +175,9 @@ struct ProfileView: View {
         .onAppear {
             if let user = userManager.currentUser {
                 name = user.name
-                email = user.email
+                phoneNumber = user.phoneNumber
             }
         }
-        .preferredColorScheme(.dark)
         .onTapGesture {
             hideKeyboard()
         }
@@ -186,11 +185,11 @@ struct ProfileView: View {
     
     private func saveProfile() {
         guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-              !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+              !phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return
         }
         
-        userManager.updateUserInfo(name: name, email: email)
+        userManager.updateUserInfo(name: name, phoneNumber: phoneNumber)
         
         // Show success alert
         showSavedAlert = true
@@ -205,7 +204,6 @@ struct ProfileView: View {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
-
 #if DEBUG
 struct ProfileView_Previews: PreviewProvider {
     static var previews: some View {
@@ -213,7 +211,7 @@ struct ProfileView_Previews: PreviewProvider {
         let manager = UserManager.shared
         // Create a user if not present for preview
         if manager.currentUser == nil {
-            manager.login(email: "user@example.com", name: "John Doe")
+            manager.login(phoneNumber: "858-393-0039", name: "Dani Tabai")
         }
         
         return ProfileView()
