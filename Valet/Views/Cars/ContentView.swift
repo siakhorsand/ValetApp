@@ -308,21 +308,36 @@ struct ContentView: View {
             
             // Hidden nav link to go directly to ShiftDetailView if needed
             .background(
-                NavigationLink(
-                    isActive: Binding(
-                        get: { selectedShiftId != nil },
-                        set: { if !$0 { selectedShiftId = nil } }
-                    )
-                ) {
-                    // Destination block
-                    if let id = selectedShiftId,
-                       let shift = shiftStore.shifts.first(where: { $0.id == id }) {
-                        ShiftDetailView(shift: shift)
+                Group {
+                    if #available(iOS 16.0, *) {
+                        NavigationLink(value: selectedShiftId) {
+                            EmptyView()
+                        }
+                        .navigationDestination(for: UUID?.self) { id in
+                            if let id = id,
+                               let shift = shiftStore.shifts.first(where: { $0.id == id }) {
+                                ShiftDetailView(shift: shift)
+                            }
+                        }
                     } else {
-                        EmptyView()
+                        // Fallback for iOS 15 and earlier
+                        NavigationLink(
+                            isActive: Binding(
+                                get: { selectedShiftId != nil },
+                                set: { if !$0 { selectedShiftId = nil } }
+                            )
+                        ) {
+                            // Destination block
+                            if let id = selectedShiftId,
+                               let shift = shiftStore.shifts.first(where: { $0.id == id }) {
+                                ShiftDetailView(shift: shift)
+                            } else {
+                                EmptyView()
+                            }
+                        } label: {
+                            EmptyView()
+                        }
                     }
-                } label: {
-                    EmptyView()
                 }
             )
             .preferredColorScheme(.dark)

@@ -498,8 +498,7 @@ struct ShiftDetailView: View {
         }
         .sheet(isPresented: $showEmployeeSheet) {
             EmployeeSheet()
-                .preferredColorScheme(.dark)
-                .presentationDetents([.medium])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $isShareSheetPresented) {
@@ -529,14 +528,20 @@ struct ShiftDetailView: View {
     }
 
     private func endShiftNow() {
+        // End the shift
         shiftStore.endShift(shift)
+        
+        // Reset UI state
         isHoldingEndShift = false
         endShiftCountdown = 5
         pulsingRed = false
         
-        // Haptic feedback
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.shiftStore.objectWillChange.send()
+        }
     }
 }
 

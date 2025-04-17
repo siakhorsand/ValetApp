@@ -32,10 +32,23 @@ class ShiftStore: ObservableObject {
     }
     
     func endShift(_ shift: Shift) {
-        guard let idx = shifts.firstIndex(where: { $0.id == shift.id }) else { return }
-        shifts[idx].endTime = Date()
-        if let updatedShift = shifts.first(where: { $0.id == shift.id }) {
-            syncShiftToCloud(updatedShift)
+        // Find the shift by ID and update it
+        if let idx = shifts.firstIndex(where: { $0.id == shift.id }) {
+            // Set the end time to now
+            shifts[idx].endTime = Date()
+            
+            // Log for debugging
+            print("Ending shift: \(shifts[idx].customerName), ID: \(shifts[idx].id)")
+            print("End time set to: \(String(describing: shifts[idx].endTime))")
+            
+            // Verify the isEnded property now returns true
+            print("Is shift ended: \(shifts[idx].isEnded)")
+            
+            syncShiftToCloud(shifts[idx])
+            
+            objectWillChange.send()
+        } else {
+            print("Error: Could not find shift with ID: \(shift.id) to end it")
         }
     }
     

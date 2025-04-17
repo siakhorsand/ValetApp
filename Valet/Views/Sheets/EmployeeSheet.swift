@@ -151,8 +151,7 @@ struct EmployeeSheet: View {
                                 }
                                 .padding(.horizontal)
                             }
-                            .frame(maxHeight: 300)
-                        }
+                            .frame(minHeight: 200, maxHeight: .infinity)                        }
                     }
                 }
                 

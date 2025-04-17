@@ -239,7 +239,8 @@ struct PulsingAnimation: ViewModifier {
             .opacity(pulsate ? 1 : 0.6)
             .animation(
                 Animation.easeInOut(duration: 0.8)
-                    .repeatForever(autoreverses: true)
+                    .repeatForever(autoreverses: true),
+                value: pulsate
             )
             .onAppear {
                 pulsate = true

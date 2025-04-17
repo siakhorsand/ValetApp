@@ -730,7 +730,7 @@ struct DetailedCarView: View {
             }
         }
         .sheet(isPresented: $showFullScreenMap) {
-            if let coord = mapCoordinate {
+            if mapCoordinate != nil {
                 VStack(spacing: 0) {
                     // Header
                     HStack {

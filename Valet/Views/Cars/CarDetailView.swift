@@ -50,6 +50,7 @@ struct CarDetailView: View {
                 .padding(.horizontal)
                 
                 // Map view if coordinates are available
+                // Map view if coordinates are available
                 if car.hasCoordinates, let lat = car.parkingLatitude, let lon = car.parkingLongitude {
                     VStack(alignment: .leading) {
                         Text("PARKING LOCATION")

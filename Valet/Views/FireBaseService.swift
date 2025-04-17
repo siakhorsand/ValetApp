@@ -149,7 +149,7 @@ struct FirebaseEmployee: Codable {
         )
         
         // Create employee with the stored values
-        var employee = Employee(name: name, color: color)
+        let employee = Employee(name: name, color: color)
         // In a real app, you would override the ID for consistency
         return employee
     }
@@ -169,7 +169,8 @@ class FirebaseService {
     
     func saveShift(_ shift: Shift, completion: @escaping (Result<Void, Error>) -> Void) {
         // Convert to Firebase model
-        let firebaseShift = FirebaseShift(from: shift)
+        // Commented out since we're not using this variable
+        // let firebaseShift = FirebaseShift(from: shift)
         
         // In a real implementation:
         /*

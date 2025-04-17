@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Camera Access -->
+    <key>NSCameraUsageDescription</key>
+    <string>This app needs access to your camera to take photos of cars for the valet service.</string>
+
+    <!-- Photo Library Access -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app needs access to your photo library to select photos of cars for the valet service.</string>
+
+    <!-- Photo Library Add-Only Access (iOS 11+) -->
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>This app needs permission to save photos to your library.</string>
+
+    <!-- Location Access When App Is In Use -->
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app needs access to your location to show you on the map and mark where cars are parked.</string>
+
+    <!-- Location Access Always (Background) -->
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>This app needs access to your location to track where cars are parked even when the app is in the background.</string>
+
+    <!-- Location Access Always (Legacy iOS 10 and earlier) -->
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>This app needs access to your location to track where cars are parked even when the app is in the background.</string>
+
+    <!-- Microphone Access (needed if recording video with audio) -->
+    <key>NSMicrophoneUsageDescription</key>
+    <string>This app needs access to your microphone when recording videos with sound.</string>
+
+    <!-- Face ID Usage (if implementing Face ID authentication) -->
+    <key>NSFaceIDUsageDescription</key>
+    <string>This app uses Face ID to securely access the valet service.</string>
+    
+    <!-- Firebase Phone Authentication -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.siaorsand.valet</string>
+                <string>app-1-1013751265533-ios-9d7e770301422ce4e7e694</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>

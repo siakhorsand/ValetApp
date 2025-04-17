@@ -13,6 +13,7 @@
 
 
 import SwiftUI
+import Firebase
 
 @main
 struct ValetLocalApp: App {
@@ -20,6 +21,16 @@ struct ValetLocalApp: App {
     @StateObject var userManager = UserManager.shared
     
     init() {
+        // Configure Firebase
+        // Check if already configured to avoid duplicate initialization
+        if FirebaseApp.app() == nil {
+            print("🔥 Initializing Firebase")
+            FirebaseApp.configure()
+            print("✅ Firebase initialization successful")
+        } else {
+            print("✅ Firebase already initialized")
+        }
+        
         // Configure the global appearance for app
         setupAppearance()
     }

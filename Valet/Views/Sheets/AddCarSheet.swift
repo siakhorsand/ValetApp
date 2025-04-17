@@ -4,10 +4,10 @@
 //
 //  Created by Sia Khorsand on 1/14/25.
 //
-
 import SwiftUI
 import MapKit
 import CoreLocation
+import PhotosUI
 
 struct AddCarSheet: View {
     @Environment(\.dismiss) var dismiss
@@ -15,17 +15,25 @@ struct AddCarSheet: View {
     @EnvironmentObject var userManager: UserManager
     let shift: Shift
 
+    // Form fields
     @State private var licensePlate = ""
     @State private var make = ""
     @State private var model = ""
     @State private var color = ""
     @State private var location = ""
     @State private var selectedEmployee: Employee?
+    
+    // Photo related states
+    @State private var showPhotoOptions = false
     @State private var showCamera = false
+    @State private var showPhotoLibrary = false
+    @State private var showImageConfirmation = false
     @State private var carPhoto: UIImage?
+    @State private var temporaryPhoto: UIImage?
+    
+    // Map related states
     @State private var showMapSheet = false
     @State private var coordinate: CLLocationCoordinate2D?
-    @State private var useDirectPhoto = false
 
     var body: some View {
         ZStack {
@@ -71,9 +79,7 @@ struct AddCarSheet: View {
                             }
                             
                             Button {
-                                // Show action sheet for camera options
-                                useDirectPhoto = true
-                                showCamera = true
+                                showPhotoOptions = true
                             } label: {
                                 Group {
                                     if let photo = carPhoto {
@@ -89,10 +95,10 @@ struct AddCarSheet: View {
                                                 .frame(height: 150)
                                             
                                             VStack(spacing: 10) {
-                                                Image(systemName: "camera.fill")
+                                                Image(systemName: "photo.on.rectangle.angled")
                                                     .font(.system(size: 30))
                                                 
-                                                Text("Tap to take photo")
+                                                Text("Tap to add photo")
                                                     .font(.subheadline)
                                             }
                                             .foregroundColor(ValetTheme.textSecondary)
@@ -137,6 +143,7 @@ struct AddCarSheet: View {
                             text: $color
                         )
                         
+                        // Location fields
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
                                 Image(systemName: "location.fill")
@@ -210,6 +217,7 @@ struct AddCarSheet: View {
                             }
                         }
                         
+                        // Parked by section
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
                                 Image(systemName: "person.fill")
@@ -302,14 +310,44 @@ struct AddCarSheet: View {
                 .padding(.bottom, 20)
             }
         }
-        .sheet(isPresented: $showCamera) {
-            if useDirectPhoto {
-                DirectCameraView(image: $carPhoto, isPresented: $showCamera)
-                    .preferredColorScheme(.dark)
-            } else {
-                ImagePicker(image: $carPhoto)
-            }
+        // Photo options action sheet
+        .actionSheet(isPresented: $showPhotoOptions) {
+            ActionSheet(
+                title: Text("Add Car Photo"),
+                message: Text("Choose a photo source"),
+                buttons: [
+                    .default(Text("Take Photo")) {
+                        showCamera = true
+                    },
+                    .default(Text("Choose from Library")) {
+                        showPhotoLibrary = true
+                    },
+                    .cancel()
+                ]
+            )
         }
+        // Camera sheet
+        .sheet(isPresented: $showCamera) {
+            DirectCameraView(image: $temporaryPhoto, isPresented: $showCamera)
+                .onDisappear {
+                    if temporaryPhoto != nil {
+                        showImageConfirmation = true
+                    }
+                }
+        }
+        // Photo library picker
+        .sheet(isPresented: $showPhotoLibrary) {
+            PhotoPicker(selectedImage: $carPhoto)
+        }
+        // Image confirmation sheet
+        .sheet(isPresented: $showImageConfirmation) {
+            ImageConfirmationView(
+                image: $temporaryPhoto,
+                confirmedImage: $carPhoto,
+                isPresented: $showImageConfirmation
+            )
+        }
+        // Map sheet
         .sheet(isPresented: $showMapSheet) {
             VStack(spacing: 0) {
                 HStack {
@@ -346,9 +384,7 @@ struct AddCarSheet: View {
                     isEditable: true
                 )
             }
-            .preferredColorScheme(.dark)
         }
-        .preferredColorScheme(.dark)
         .onTapGesture {
             hideKeyboard()
         }
@@ -356,7 +392,6 @@ struct AddCarSheet: View {
             if let user = userManager.currentUser {
                 let existingEmployee = shiftStore.allEmployees.first(where: { $0.name == user.name })
                 selectedEmployee = existingEmployee
-                
             }
         }
     }
@@ -371,11 +406,9 @@ struct AddCarSheet: View {
         userManager.currentUser != nil
     }
     
-
     private func addNewCar() {
         guard isFormValid, let user = userManager.currentUser else { return }
         
-
         var employee: Employee
         if let existingEmployee = selectedEmployee {
             employee = existingEmployee
@@ -424,6 +457,111 @@ struct AddCarSheet: View {
     }
 }
 
+// Photo picker using PhotosUI
+struct PhotoPicker: UIViewControllerRepresentable {
+    @Binding var selectedImage: UIImage?
+    
+    func makeUIViewController(context: Context) -> PHPickerViewController {
+        var config = PHPickerConfiguration()
+        config.filter = .images
+        config.selectionLimit = 1
+        
+        let picker = PHPickerViewController(configuration: config)
+        picker.delegate = context.coordinator
+        return picker
+    }
+    
+    func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, PHPickerViewControllerDelegate {
+        let parent: PhotoPicker
+        
+        init(_ parent: PhotoPicker) {
+            self.parent = parent
+        }
+        
+        func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+            picker.dismiss(animated: true)
+            
+            guard let provider = results.first?.itemProvider else { return }
+            
+            if provider.canLoadObject(ofClass: UIImage.self) {
+                provider.loadObject(ofClass: UIImage.self) { image, error in
+                    DispatchQueue.main.async {
+                        self.parent.selectedImage = image as? UIImage
+                        
+                        // Provide haptic feedback
+                        let generator = UINotificationFeedbackGenerator()
+                        generator.notificationOccurred(.success)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Image confirmation view
+struct ImageConfirmationView: View {
+    @Binding var image: UIImage?
+    @Binding var confirmedImage: UIImage?
+    @Binding var isPresented: Bool
+    
+    var body: some View {
+        NavigationView {
+            VStack {
+                if let img = image {
+                    Image(uiImage: img)
+                        .resizable()
+                        .scaledToFit()
+                        .padding()
+                } else {
+                    Text("No image to confirm")
+                        .foregroundColor(ValetTheme.textSecondary)
+                }
+                
+                HStack(spacing: 20) {
+                    Button(action: {
+                        // Discard image
+                        image = nil
+                        isPresented = false
+                    }) {
+                        Text("Retake")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(ValetTheme.error.opacity(0.2))
+                            .foregroundColor(ValetTheme.error)
+                            .cornerRadius(10)
+                    }
+                    
+                    Button(action: {
+                        // Accept the image
+                        confirmedImage = image
+                        image = nil
+                        isPresented = false
+                    }) {
+                        Text("Use Photo")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(ValetTheme.success.opacity(0.2))
+                            .foregroundColor(ValetTheme.success)
+                            .cornerRadius(10)
+                    }
+                }
+                .padding()
+            }
+            .navigationTitle("Confirm Photo")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(leading: Button("Cancel") {
+                image = nil
+                isPresented = false
+            })
+        }
+    }
+}
 #if DEBUG
 struct AddCarSheet_Previews: PreviewProvider {
     static var previews: some View {

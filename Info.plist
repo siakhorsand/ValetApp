@@ -4,6 +4,10 @@
 <dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Valet needs access to your camera to take photos of cars for identification and documentation purposes.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to show you on the map and help you mark where cars are parked.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location to show you on the map and help you mark where cars are parked.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Valet needs access to your photo library to select car photos for identification and documentation purposes.</string>
 </dict>

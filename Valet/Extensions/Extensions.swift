@@ -59,3 +59,47 @@ extension AnyTransition {
         return .asymmetric(insertion: insertion, removal: removal)
     }
 }
+
+extension View {
+    @ViewBuilder
+    func onValueChange<V: Equatable>(
+        of value: V,
+        perform action: @escaping (V, V) -> Void
+    ) -> some View {
+        if #available(iOS 17.0, *) {
+            self.onChange(of: value) { oldValue, newValue in
+                action(oldValue, newValue)
+            }
+        } else {
+            ValueChangeModifier(value: value, action: action) {
+                self
+            }
+        }
+    }
+}
+
+// Private internal implementation for iOS < 17
+private struct ValueChangeModifier<V: Equatable, Content: View>: View {
+    let content: Content
+    let action: (V, V) -> Void
+    
+    @State private var storedValue: V
+    let newValue: V
+    
+    init(value: V, action: @escaping (V, V) -> Void, @ViewBuilder content: () -> Content) {
+        self.content = content()
+        self.action = action
+        self._storedValue = State(initialValue: value)
+        self.newValue = value
+    }
+    
+    var body: some View {
+        content
+            .onChange(of: newValue) { oldValue, updatedValue in
+                if storedValue != updatedValue {
+                    action(storedValue, updatedValue)
+                    storedValue = updatedValue
+                }
+            }
+    }
+}
